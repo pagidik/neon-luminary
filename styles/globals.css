@@ -1,0 +1,27 @@
+/* Neon Luminary — Global Styles */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Inter', sans-serif;
+  background: #0e0e0f;
+  color: #ffffff;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars globally */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; }
+
+@keyframes slideR    { from { transform: translateX(105%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideL    { from { transform: translateX(-105%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeUp    { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes spin      { to { transform: rotate(360deg); } }
+@keyframes toastIn   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulseGlow { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes scanline  { 0% { top: -15%; } 100% { top: 115%; } }
+@keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.slide-r { animation: slideR .32s cubic-bezier(.22,.68,0,1.15) both; }
+.slide-l { animation: slideL .32s cubic-bezier(.22,.68,0,1.15) both; }
+.fade-up { animation: fadeUp .35s ease both; }
