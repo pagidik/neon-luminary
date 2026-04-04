@@ -1,0 +1,125 @@
+{
+  "updatedAt": "2026-04-04T14:00:00Z",
+  "stories": [
+    {
+      "id": 1,
+      "e": "🖥️",
+      "title": "Cursor 3 Rebuilds IDE Around AI Agents",
+      "summary": "Cursor launched version 3 on April 2, completely rebuilding its interface around the premise that AI agents will write most future code. The new Agents Window lets multiple AI agents work in parallel across files, with humans reviewing rather than writing. It is a fundamental rethink of the developer workflow — not an incremental update. Engineers report 3–5x throughput gains on greenfield projects.",
+      "whyItMatters": "The IDE is becoming an agent orchestrator. Human developers are becoming reviewers.",
+      "cat": "Coding AI",
+      "src": "DEV Community",
+      "url": "https://dev.to/devtoolpicks/cursor-3-just-launched-with-an-ai-agents-window-what-changed-and-is-it-still-worth-it-496f",
+      "tool": true,
+      "tags": ["Paid"]
+    },
+    {
+      "id": 2,
+      "e": "🔮",
+      "title": "Google Gemma 4 Ships — Most Capable Open Models Yet",
+      "summary": "Google released Gemma 4, a new family of open-weight models under Apache 2.0, positioning them as the strongest open-source models available. The family spans from on-device sizes to data-center scale, covering NVIDIA Blackwell GPUs, AMD ROCm, and Google TPUs. Alongside Google's Gemma, PrismML's 1-bit Bonsai, H Company's Holo3, and Arcee's Trinity all shipped this week under Apache 2.0 — together covering every device tier from phones to clusters.",
+      "whyItMatters": "Open models now match frontier quality. The moat for closed APIs is evaporating fast.",
+      "cat": "LLMs",
+      "src": "Google Blog",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/",
+      "tool": false,
+      "tags": ["Open-source", "Free"]
+    },
+    {
+      "id": 3,
+      "e": "📉",
+      "title": "Anthropic Ends Claude Access on Third-Party Tools",
+      "summary": "Anthropic announced that Claude subscriptions will no longer cover usage on third-party tools starting April 4 at 12pm PT, citing capacity management. Products like OpenClaw, Cursor, and others that relied on users' Claude subscriptions must now integrate direct API billing. The move signals Anthropic is tightening its API funnel as demand outpaces infrastructure. Third-party developers now face a choice: absorb API costs or pass them to users.",
+      "whyItMatters": "Subscription arbitrage era is over. Every Claude integration now pays API rates directly.",
+      "cat": "Business",
+      "src": "The Verge",
+      "url": "https://www.theverge.com",
+      "tool": false,
+      "tags": []
+    },
+    {
+      "id": 4,
+      "e": "🧬",
+      "title": "Anthropic Acquires Coefficient Bio for ~$400M",
+      "summary": "Anthropic paid approximately $400 million to acquire Coefficient Bio, a startup developing AI models specifically for biological research. The deal signals Anthropic's push beyond general-purpose AI into scientific computing, potentially applying Claude's reasoning capabilities to drug discovery, protein interaction modeling, and biomedical literature synthesis. It is Anthropic's largest acquisition to date.",
+      "whyItMatters": "AI labs are buying their way into biotech. Claude's next frontier is molecular biology.",
+      "cat": "Research",
+      "src": "Axios",
+      "url": "https://www.axios.com/2026/04/03/anthropic-openai-ipo",
+      "tool": false,
+      "tags": []
+    },
+    {
+      "id": 5,
+      "e": "🚀",
+      "title": "OpenAI Acquires Tech Talk Show TBPN",
+      "summary": "OpenAI paid low hundreds of millions to acquire TBPN, a prominent technology media property. The acquisition is widely read as a distribution play — giving OpenAI a direct media voice as it navigates an upcoming IPO and intensifying regulatory scrutiny. TBPN's audience of builders and investors gives OpenAI unprecedented reach into the developer and venture community without relying on traditional press coverage.",
+      "whyItMatters": "OpenAI is buying its own media narrative ahead of an IPO. Distribution is the new moat.",
+      "cat": "Startups",
+      "src": "Axios",
+      "url": "https://www.axios.com/2026/04/03/anthropic-openai-ipo",
+      "tool": false,
+      "tags": []
+    },
+    {
+      "id": 6,
+      "e": "📈",
+      "title": "Anthropic and OpenAI Both Signal IPO Plans",
+      "summary": "Both Anthropic and OpenAI are actively pursuing public listings, according to reporting from Axios. The dual IPO track reflects growing confidence that AI revenue models have matured enough to satisfy public market scrutiny. Anthropic's revenue has accelerated with Claude's enterprise adoption, while OpenAI's ChatGPT consumer base and API business give it a broader story. Both face the challenge of justifying trillion-dollar valuations amid rising compute costs.",
+      "whyItMatters": "AI's moment of financial reckoning is coming. IPOs will force real unit economics into the open.",
+      "cat": "Business",
+      "src": "Axios",
+      "url": "https://www.axios.com/2026/04/03/anthropic-openai-ipo",
+      "tool": false,
+      "tags": []
+    },
+    {
+      "id": 7,
+      "e": "👨‍💻",
+      "title": "Zuckerberg Writes Code Again After 20-Year Hiatus",
+      "summary": "Mark Zuckerberg has returned to writing code for the first time in roughly two decades, submitting three diffs to Meta's internal monorepo. Sources describe him as a heavy user of Claude Code CLI, using it to prototype AI experiments directly. The move is partly symbolic — signaling Meta's all-in AI posture — but also practical, as Zuckerberg aims to stay technically grounded as Meta's AI products become central to its business.",
+      "whyItMatters": "When a CEO codes again via AI tools, it shows how much the productivity ceiling has shifted.",
+      "cat": "Tools",
+      "src": "The Pragmatic Engineer",
+      "url": "https://llm-stats.com/ai-news",
+      "tool": false,
+      "tags": []
+    },
+    {
+      "id": 8,
+      "e": "❤️",
+      "title": "AI Detects Heart Failure From 5-Second Voice Clip",
+      "summary": "Noah Labs received FDA Breakthrough Device designation for Vox, an AI system capable of detecting heart failure from just a five-second voice recording. The model analyzes acoustic biomarkers in speech — subtle changes in pitch, breathiness, and rhythm caused by fluid buildup around the heart. Clinical trials showed 87% sensitivity in detecting early-stage heart failure before patients reported symptoms.",
+      "whyItMatters": "Your phone mic becomes a cardiac screening tool. Preventive medicine just got ambient.",
+      "cat": "Research",
+      "src": "BuildEZ Blog",
+      "url": "https://www.buildez.ai/blog/ai-trending-april-2026-developments",
+      "tool": true,
+      "tags": []
+    },
+    {
+      "id": 9,
+      "e": "🕷️",
+      "title": "MolmoWeb Beats OpenAI's CUA on 3 of 4 Benchmarks",
+      "summary": "MolmoWeb, an open-source web agent from the Allen Institute for AI, now outperforms OpenAI's Computer Use Agent on three of four standard benchmarks including WebVoyager and Online-Mind2Web. With 4 parallel attempts, MolmoWeb beats the best single-attempt score from CUA. The model is open-weight, free to deploy, and signals that web automation capabilities are no longer a closed-lab exclusive.",
+      "whyItMatters": "Open-source web agents are catching up fast. Browser automation is becoming a commodity.",
+      "cat": "LLMs",
+      "src": "Radical Data Science",
+      "url": "https://radicaldatascience.wordpress.com/2026/04/02/ai-news-briefs-bulletin-board-for-april-2026/",
+      "tool": false,
+      "tags": ["Open-source", "Free"]
+    },
+    {
+      "id": 10,
+      "e": "🔧",
+      "title": "Claude Code Adds Named Subagents, PowerShell & Windows Fixes",
+      "summary": "Anthropic shipped a substantial Claude Code update with named subagent support via @ mentions, flicker-free alt-screen rendering, and broader permission controls. Critically, Windows and PowerShell support received major stability fixes — long-session crashes, scrollback glitches, and voice issues are resolved. The update cements Claude Code as a first-class cross-platform coding agent rather than a macOS-first tool.",
+      "whyItMatters": "Claude Code just became a serious Windows tool. The entire developer base is now reachable.",
+      "cat": "Coding AI",
+      "src": "Releasebot",
+      "url": "https://releasebot.io/updates/anthropic",
+      "tool": true,
+      "tags": ["Free", "Paid"]
+    }
+  ]
+}

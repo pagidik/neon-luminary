@@ -20,23 +20,8 @@ const C = {
   shadow:       "0 0 15px rgba(151,169,255,0.05)",
 };
 
-/* ── Demo Data ─────────────────────────────────────────────── */
-const DEMO = [
-  { id:1,  e:"🧠", title:"GPT-5 Launches With Native Multimodal Reasoning",       summary:"OpenAI's GPT-5 delivers unified vision-language reasoning at 2× GPT-4o benchmark scores, with long-context tasks reaching 256k tokens. Engineers cite efficiency as the critical lever, achieving major gains across mathematics, coding, and complex instruction following at significantly reduced compute cost.", whyItMatters:"The gap between AI and domain experts continues to close at an accelerating pace.", cat:"LLMs",      src:"OpenAI Blog",   url:"https://openai.com",       tool:false, tags:["Paid"] },
-  { id:2,  e:"💻", title:"Cursor Raises $500M Series C at $9B Valuation",          summary:"AI-native IDE Cursor closes a landmark $500M round, reporting $200M ARR and 200k paying developers. Multimodal code generation and agent-driven refactoring are cited as core growth drivers, signaling a broader shift toward AI-first development tooling in enterprise engineering organizations worldwide.", whyItMatters:"Enterprise is systematically betting on AI-augmented engineering at scale.", cat:"Startups",  src:"TechCrunch",    url:"https://techcrunch.com",   tool:false, tags:[] },
-  { id:3,  e:"🔍", title:"Perplexity Deep Research Opens to All Free Users",        summary:"Perplexity's multi-step deep research feature is now free for all accounts, delivering citation-backed research reports via parallel web searches. This directly competes with Gemini Advanced and disrupts the established premium AI research tier model, forcing a fundamental repricing of AI research tools.", whyItMatters:"Research-grade AI is becoming a commodity, erasing premium subscriptions.", cat:"Tools",    src:"Perplexity AI", url:"https://perplexity.ai",    tool:true,  tags:["Free","Open-source"] },
-  { id:4,  e:"🦙", title:"Meta Llama 4 Scout Reaches 10M Token Context Window",    summary:"Meta's open-source Llama 4 Scout now supports a 10-million token context window, enabling full codebase or book-length analysis in a single prompt. The model is freely downloadable with a commercial license, setting a new open-weight benchmark that directly challenges closed proprietary frontier models.", whyItMatters:"Open models shatter the last long-context frontier held by proprietary labs.", cat:"LLMs",      src:"Meta AI",       url:"https://ai.meta.com",      tool:false, tags:["Open-source","Free"] },
-  { id:5,  e:"🌊", title:"Windsurf Cascade Agent Goes Generally Available",         summary:"Codeium's Windsurf Cascade reaches GA as an agentic coding assistant that autonomously handles multi-file refactors, writes comprehensive tests, and deploys changes across the stack. A generous free tier targets individual developers while the Pro plan targets engineering teams at competitive pricing.", whyItMatters:"Developers are becoming reviewers as agentic AI takes over code-writing.", cat:"Coding AI", src:"Codeium",       url:"https://codeium.com",      tool:true,  tags:["Free","Paid"] },
-  { id:6,  e:"🔬", title:"DeepMind Releases AlphaFold 3 Open Weights",            summary:"DeepMind has open-sourced AlphaFold 3 model weights, allowing biotech labs worldwide to run protein-ligand structure prediction locally without API costs. This eliminates a major financial barrier for drug discovery pipelines, enabling smaller research institutions to participate in frontier biology.", whyItMatters:"Biotech R&D timelines compress by orders of magnitude with open access.", cat:"Research",  src:"DeepMind",      url:"https://deepmind.com",     tool:false, tags:["Open-source","Free"] },
-  { id:7,  e:"🏥", title:"Claude Enterprise Achieves Full HIPAA Compliance",       summary:"Anthropic's Claude Enterprise plan is now fully HIPAA-eligible, opening clinical documentation, prior authorization workflows, and patient triage systems to AI assistants in regulated healthcare environments. This marks a milestone in the adoption of frontier AI within compliance-sensitive industries.", whyItMatters:"Regulated industries can adopt frontier AI without legal or compliance exposure.", cat:"Business",  src:"Anthropic",     url:"https://anthropic.com",    tool:false, tags:["Paid"] },
-  { id:8,  e:"🎙️", title:"ElevenLabs Voice Design Generates Custom Voices in 30s", summary:"ElevenLabs' Voice Design API creates unique AI voices from a plain-English description in under 30 seconds, with 99 languages and dynamic emotion control. Instant commercial licensing dramatically lowers the barrier for voice AI integration in both consumer and enterprise applications.", whyItMatters:"Custom voice AI becomes truly accessible to solo developers.", cat:"Tools",    src:"ElevenLabs",    url:"https://elevenlabs.io",    tool:true,  tags:["Free","Paid"] },
-  { id:9,  e:"⚖️", title:"EU AI Act High-Risk Rules Now Enforceable Across States", summary:"The EU AI Act's high-risk provisions are now legally binding across all member states, requiring mandatory conformity assessments for AI in hiring, credit scoring, healthcare, education, and critical infrastructure. Non-compliance carries fines up to 3% of global annual turnover.", whyItMatters:"EU compliance is now a hard launch prerequisite for every global AI product.", cat:"Business",  src:"EU Commission", url:"https://ec.europa.eu",     tool:false, tags:[] },
-  { id:10, e:"🇫🇷", title:"Mistral Le Chat Pro Launches Agents, Canvas, and Search",summary:"Mistral's Le Chat Pro subscription adds persistent AI agents, a collaborative Canvas editor, native web search, image generation, and claims 70% cost advantage vs GPT-4o. The launch positions Mistral as a credible European frontier alternative for both consumer and enterprise use cases.", whyItMatters:"European AI is now genuinely competitive at frontier quality and price.", cat:"LLMs",      src:"Mistral AI",    url:"https://mistral.ai",       tool:true,  tags:["Paid"] },
-];
-
 const CATS = ["LLMs","Tools","Startups","Research","Coding AI","Business"];
 const WL   = { S:100, M:150, L:200 };
-const REFRESH_MS = 10 * 60 * 1000; // 10 minutes
 
 const trunc = (text, n) => {
   const w = text.split(" ");
@@ -53,14 +38,17 @@ const catColor = (cat) => ({
   Research: C.tertiary, "Coding AI": C.secondary, Business: "#7dd3fc",
 }[cat] || C.primary);
 
-const fmt = (d) => d ? d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) : null;
+const fmtDate = (iso) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return d.toLocaleDateString([], { month:"short", day:"numeric" }) + " · " + d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+};
 
 /* ── Main App ──────────────────────────────────────────────── */
 export default function NeonLuminary() {
-  const [news,       setNews]      = useState(DEMO);
-  const [fetching,   setFetching]  = useState(false);
-  const [liveMode,   setLiveMode]  = useState(false);
-  const [lastFetch,  setLastFetch] = useState(null);
+  const [news,       setNews]      = useState([]);
+  const [updatedAt,  setUpdatedAt] = useState(null);
+  const [loading,    setLoading]   = useState(true);
   const [rawPage,    setRawPage]   = useState(0);
   const [tab,        setTab]       = useState("feed");
   const [sumLen,     setSumLen]    = useState("M");
@@ -75,15 +63,27 @@ export default function NeonLuminary() {
   const [slideKey,   setSlideKey]  = useState(0);
   const [audioOn,    setAudioOn]   = useState(false);
 
+  /* Load static JSON on mount */
+  useEffect(() => {
+    fetch("/news-data.json")
+      .then(r => r.json())
+      .then(data => {
+        setNews(data.stories || []);
+        setUpdatedAt(data.updatedAt || null);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   /* Derived */
   const feed        = interests.length ? news.filter(n => interests.includes(n.cat)) : news;
   const displayNews = feed.length ? feed : news;
-  const page        = Math.min(rawPage, displayNews.length - 1);
+  const page        = Math.min(rawPage, Math.max(0, displayNews.length - 1));
   const item        = displayNews[page] ?? displayNews[0];
 
   const searchResults = news.filter(n => {
     const q  = searchQ.toLowerCase();
-    const mq = !q || n.title.toLowerCase().includes(q) || n.cat.toLowerCase().includes(q);
+    const mq = !q || n.title.toLowerCase().includes(q) || n.cat.toLowerCase().includes(q) || n.src.toLowerCase().includes(q);
     const mc = filterCat === "All" || n.cat === filterCat;
     return mq && mc;
   });
@@ -102,64 +102,14 @@ export default function NeonLuminary() {
   const related  = displayNews.filter((_,i) => i !== page).slice(0,3);
 
   /* Refs */
-  const toastTimer   = useRef(null);
-  const refreshTimer = useRef(null);
-  const dragRef      = useRef({ x:null, active:false });
+  const toastTimer = useRef(null);
+  const dragRef    = useRef({ x:null, active:false });
 
   const toast$ = useCallback((msg, icon="✦") => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ msg, icon });
     toastTimer.current = setTimeout(() => setToast(null), 2800);
   }, []);
-
-  /* Live fetch — calls secure /api/news proxy */
-  const fetchLive = useCallback(async (silent = false) => {
-    if (!silent) toast$("Fetching live AI news…", "◌");
-    setFetching(true);
-    try {
-      const res = await fetch("/api/news", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          tools: [{ type: "web_search_20250305", name: "web_search" }],
-          system: `You are an AI news curator. Search the web for the 10 most important AI news stories from the last 48 hours. Respond with ONLY a raw JSON array — no markdown, no backticks, no explanation. Each object must have: id(1-10), e(single emoji), title(string max 12 words), summary(string max 180 words, detailed and insightful), whyItMatters(string max 25 words), cat(exactly one of: LLMs,Tools,Startups,Research,Coding AI,Business), src(publication name), url(string URL), tool(boolean), tags(array subset of: Free,Paid,Open-source).`,
-          messages: [{ role:"user", content:"Search and return today's top 10 AI news as a JSON array only. No preamble." }]
-        }),
-      });
-      const data = await res.json();
-      const raw  = data.content?.map(b => b.text || "").join("\n") || "";
-      const m    = raw.match(/\[[\s\S]*?\]/);
-      if (m) {
-        const parsed = JSON.parse(m[0]);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setNews(parsed);
-          setRawPage(0);
-          setSlideKey(k => k+1);
-          setLastFetch(new Date());
-          setLiveMode(true);
-          if (!silent) toast$(`${parsed.length} live stories loaded`, "✓");
-          return;
-        }
-      }
-      throw new Error("parse");
-    } catch(e) {
-      console.error(e);
-      if (!silent) toast$("Using cached stories — check API key", "◎");
-    } finally {
-      setFetching(false);
-    }
-  }, [toast$]);
-
-  /* Auto-fetch on mount + every 10 min */
-  useEffect(() => {
-    fetchLive(false);
-    refreshTimer.current = setInterval(() => fetchLive(true), REFRESH_MS);
-    return () => {
-      if (refreshTimer.current) clearInterval(refreshTimer.current);
-    };
-  }, [fetchLive]);
 
   /* Navigation */
   const goPage = (dir) => {
@@ -233,16 +183,14 @@ export default function NeonLuminary() {
   ];
   const tabIdx = TABS.findIndex(t => t.id === tab);
 
-  /* ── Styles (inline for portability) ── */
+  /* ── Styles ── */
   const S = {
     app: { minHeight:"100dvh", background:C.surface, color:C.onSurface, display:"flex", flexDirection:"column", maxWidth:480, margin:"0 auto", position:"relative" },
     hdr: { position:"sticky", top:0, zIndex:50, height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", background:"rgba(14,14,15,0.85)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:`1px solid ${C.outlineFaint}`, boxShadow:C.shadow },
     logo: { fontFamily:"'Space Grotesk',sans-serif", fontSize:15, fontWeight:700, letterSpacing:"-.5px", color:C.primary, textTransform:"uppercase", display:"flex", alignItems:"center", gap:8 },
     hdrR: { display:"flex", alignItems:"center", gap:10 },
-    liveBadge: { display:"flex", alignItems:"center", gap:5, background:"rgba(160,255,196,.1)", border:"1px solid rgba(160,255,196,.2)", borderRadius:100, padding:"3px 10px", fontFamily:"'Space Grotesk',sans-serif", fontSize:8, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", color:C.tertiary },
-    liveDot: { width:6, height:6, borderRadius:"50%", background:C.tertiary, animation:"pulseGlow 1.4s ease infinite" },
-    screen: { flex:1, overflow:"hidden", position:"relative" },
-    scroll: { position:"absolute", inset:0, overflowY:"auto" },
+    freshBadge: { display:"flex", alignItems:"center", gap:5, background:"rgba(160,255,196,.1)", border:"1px solid rgba(160,255,196,.2)", borderRadius:100, padding:"3px 10px", fontFamily:"'Space Grotesk',sans-serif", fontSize:8, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", color:C.tertiary },
+    freshDot: { width:6, height:6, borderRadius:"50%", background:C.tertiary, animation:"pulseGlow 1.4s ease infinite" },
     cardShell: { background:C.surfaceCtr, borderRadius:16, overflow:"hidden", border:`1px solid ${C.outlineFaint}`, boxShadow:"0 4px 24px rgba(0,0,0,0.4)", margin:"14px 14px 0" },
     hero: { height:220, position:"relative", overflow:"hidden", background:C.surfaceHigh, display:"flex", alignItems:"center", justifyContent:"center" },
     heroEmoji: { fontSize:110, opacity:.18, filter:"grayscale(1)" },
@@ -291,11 +239,20 @@ export default function NeonLuminary() {
     const s = styles[t] || styles.Tool;
     return <span style={{ padding:"3px 10px", borderRadius:100, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", background:s.bg, color:s.color, border:`1px solid ${s.b}` }}>{t}</span>;
   };
-  const NavBtn = ({t,i}) => (
+  const NavBtn = ({t}) => (
     <button onClick={()=>setTab(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, cursor:"pointer", padding:"6px 14px", background:"none", border:"none", transition:"opacity .18s" }}>
       <span style={{ fontSize:20, color: tab===t.id ? C.primary : C.onVariant, transition:"transform .2s", transform: tab===t.id?"translateY(-2px)":"none" }}>{t.icon}</span>
       <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:8, fontWeight:700, letterSpacing:1, textTransform:"uppercase", color: tab===t.id ? C.primary : C.onVariant }}>{t.label}</span>
     </button>
+  );
+
+  /* Loading skeleton */
+  if (loading) return (
+    <div style={{ minHeight:"100dvh", background:C.surface, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16 }}>
+      <div style={{ width:40, height:40, border:`3px solid rgba(151,169,255,0.15)`, borderTopColor:C.primary, borderRadius:"50%", animation:"spin .7s linear infinite" }} />
+      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant }}>Loading briefing…</span>
+      <style>{`@keyframes spin { to { transform:rotate(360deg) } }`}</style>
+    </div>
   );
 
   /* ── Render ── */
@@ -303,14 +260,14 @@ export default function NeonLuminary() {
     <>
       <Head>
         <title>Neon Luminary | AI Briefing</title>
-        <meta name="description" content="Real-time curated AI news, tools, and research briefings powered by Claude AI." />
+        <meta name="description" content="Daily curated AI news, tools, and research briefings — updated every 24 hours." />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0e0e0f" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translacent" />
         <meta property="og:title" content="Neon Luminary | AI Briefing" />
-        <meta property="og:description" content="Real-time AI news powered by Claude AI and web search." />
+        <meta property="og:description" content="Daily curated AI news — updated every 24 hours." />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -318,19 +275,15 @@ export default function NeonLuminary() {
       </Head>
 
       <div style={S.app}>
-
         {/* Header */}
         <header style={S.hdr}>
           <div style={S.logo}>◈ Neon Luminary</div>
           <div style={S.hdrR}>
-            {liveMode && (
-              <div style={S.liveBadge}>
-                <span style={S.liveDot} />
-                {lastFetch ? `Updated ${fmt(lastFetch)}` : "Live"}
+            {updatedAt && (
+              <div style={S.freshBadge}>
+                <span style={S.freshDot} />
+                {fmtDate(updatedAt)}
               </div>
-            )}
-            {fetching && (
-              <div style={{ width:16, height:16, border:"2px solid rgba(151,169,255,0.2)", borderTopColor:C.primary, borderRadius:"50%", animation:"spin .7s linear infinite" }} />
             )}
             <button onClick={()=>setTab("settings")} style={{ width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", color:C.primary, cursor:"pointer", fontSize:18, borderRadius:8 }}>◉</button>
           </div>
@@ -339,7 +292,7 @@ export default function NeonLuminary() {
         {/* Screen */}
         <div style={{ flex:1, overflow:"hidden", position:"relative" }}>
 
-          {/* ── FEED ────────────────────────────────────────── */}
+          {/* ── FEED ── */}
           {tab === "feed" && item && (
             <div style={{ position:"absolute", inset:0 }}>
               <div style={{ position:"absolute", inset:0, overflowY:"auto" }}
@@ -348,7 +301,6 @@ export default function NeonLuminary() {
 
                 <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
                   <div style={S.cardShell}>
-                    {/* Hero */}
                     <div style={S.hero}>
                       <span style={S.heroEmoji}>{item.e}</span>
                       <div style={S.heroFade} />
@@ -364,15 +316,12 @@ export default function NeonLuminary() {
                       </div>
                     </div>
 
-                    {/* Body */}
                     <div style={S.cardBody}>
-                      {/* Why It Matters */}
                       <div style={S.why}>
                         <div style={S.whyLbl}>💡 Why It Matters</div>
                         <div style={S.whyText}>{item.whyItMatters}</div>
                       </div>
 
-                      {/* Meta + S/M/L */}
                       <div style={S.metaRow}>
                         <div style={{ display:"flex", gap:10 }}>
                           <span style={{ display:"flex", alignItems:"center", gap:4, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, textTransform:"uppercase", color:C.onVariant }}>
@@ -387,15 +336,12 @@ export default function NeonLuminary() {
                         </div>
                       </div>
 
-                      {/* Mode pills */}
                       <div style={S.modeRow}>
                         {["ELI5","Technical","Business"].map(m => <ModeBtn key={m} m={m} />)}
                       </div>
 
-                      {/* Summary */}
                       <p style={{ fontSize:14, color:C.onVariant, lineHeight:1.75, marginBottom:16 }}>{getSummary(item,aiMode,sumLen)}</p>
 
-                      {/* Tags */}
                       {item.tags?.length > 0 && (
                         <div style={S.tags}>
                           {item.tool && <Tag t="Tool" />}
@@ -403,7 +349,6 @@ export default function NeonLuminary() {
                         </div>
                       )}
 
-                      {/* Actions */}
                       <div style={S.actRow}>
                         <RxBtn id={item.id} type="like" emoji="👍" />
                         <RxBtn id={item.id} type="fire" emoji="🔥" />
@@ -413,15 +358,13 @@ export default function NeonLuminary() {
                         <IcoBtn ico="↗"                on={false}         onClick={()=>share(item)} />
                       </div>
 
-                      {/* Source link */}
                       <a href={item.url} target="_blank" rel="noreferrer"
-                        style={{ display:"flex", alignItems:"center", gap:6, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", color:C.tertiary, textDecoration:"none", transition:"opacity .18s" }}>
-                        Explore on {item.src} <span>→</span>
+                        style={{ display:"flex", alignItems:"center", gap:6, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", color:C.tertiary, textDecoration:"none" }}>
+                        Read on {item.src} <span>→</span>
                       </a>
                     </div>
                   </div>
 
-                  {/* Related intel */}
                   {related.length > 0 && (
                     <div style={{ marginTop:22, marginBottom:4 }}>
                       <div style={S.secHdr}>
@@ -440,7 +383,6 @@ export default function NeonLuminary() {
                 </div>
               </div>
 
-              {/* Dots */}
               <div style={S.dots}>
                 {displayNews.map((_,i) => (
                   <div key={i} onClick={()=>jumpPage(i)}
@@ -448,7 +390,6 @@ export default function NeonLuminary() {
                 ))}
               </div>
 
-              {/* Arrows */}
               {page > 0 && (
                 <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:"rgba(14,14,15,0.7)", backdropFilter:"blur(12px)", border:"none", color:C.onSurface, fontSize:18, cursor:"pointer", width:30, height:52, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 8px 8px 0", opacity:.7 }}>‹</button>
               )}
@@ -458,7 +399,7 @@ export default function NeonLuminary() {
             </div>
           )}
 
-          {/* ── HOT ──────────────────────────────────────────── */}
+          {/* ── HOT ── */}
           {tab === "hot" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
               <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
@@ -466,17 +407,19 @@ export default function NeonLuminary() {
                 <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:C.onVariant }}>Ranked by community signal</div>
               </div>
               <div style={{ flex:1, overflowY:"auto", paddingBottom:8 }}>
-                <div style={{ ...S.secHdr, marginBottom:10 }}><span style={S.secLine}/>Hot Tools<span style={S.secLine}/></div>
-                <div style={{ display:"flex", gap:10, overflowX:"auto", padding:"0 14px 16px" }}>
-                  {toolList.map(t => (
-                    <div key={t.id} onClick={()=>jumpToStory(t.id)}
-                      style={{ flexShrink:0, width:110, padding:"16px 14px", background:C.surfaceCtr, borderRadius:12, border:`1px solid ${C.outlineFaint}`, cursor:"pointer", transition:"all .18s" }}>
-                      <span style={{ fontSize:28, marginBottom:10, display:"block" }}>{t.e}</span>
-                      <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, lineHeight:1.3, marginBottom:3 }}>{t.title.split(" ").slice(0,4).join(" ")}…</div>
-                      <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:500, color:C.onVariant }}>{t.src}</div>
-                    </div>
-                  ))}
-                </div>
+                {toolList.length > 0 && <>
+                  <div style={{ ...S.secHdr, marginBottom:10 }}><span style={S.secLine}/>Hot Tools<span style={S.secLine}/></div>
+                  <div style={{ display:"flex", gap:10, overflowX:"auto", padding:"0 14px 16px" }}>
+                    {toolList.map(t => (
+                      <div key={t.id} onClick={()=>jumpToStory(t.id)}
+                        style={{ flexShrink:0, width:110, padding:"16px 14px", background:C.surfaceCtr, borderRadius:12, border:`1px solid ${C.outlineFaint}`, cursor:"pointer" }}>
+                        <span style={{ fontSize:28, marginBottom:10, display:"block" }}>{t.e}</span>
+                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, lineHeight:1.3, marginBottom:3 }}>{t.title.split(" ").slice(0,4).join(" ")}…</div>
+                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:500, color:C.onVariant }}>{t.src}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>}
                 <div style={{ ...S.secHdr, marginBottom:10 }}><span style={S.secLine}/>Top Stories<span style={S.secLine}/></div>
                 {trending.map((n,i) => (
                   <div key={n.id} onClick={()=>jumpToStory(n.id)}
@@ -495,7 +438,7 @@ export default function NeonLuminary() {
             </div>
           )}
 
-          {/* ── SEARCH ───────────────────────────────────────── */}
+          {/* ── SEARCH ── */}
           {tab === "search" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
               <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
@@ -505,7 +448,7 @@ export default function NeonLuminary() {
                   <input placeholder="Search stories, sources…" value={searchQ} onChange={e=>setSearchQ(e.target.value)}
                     style={{ flex:1, background:"none", border:"none", outline:"none", fontFamily:"'Space Grotesk',sans-serif", fontSize:13, fontWeight:500, color:C.onSurface, padding:"13px 0" }} />
                 </div>
-                <div style={{ display:"flex", gap:6, overflowX:"auto", flexShrink:0 }}>
+                <div style={{ display:"flex", gap:6, overflowX:"auto" }}>
                   {["All",...CATS].map(c => (
                     <button key={c} onClick={()=>setFilterCat(c)}
                       style={{ padding:"5px 12px", borderRadius:100, flexShrink:0, border:`1px solid ${filterCat===c?"rgba(151,169,255,0.4)":C.outlineFaint}`, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", background: filterCat===c?"rgba(151,169,255,0.15)":C.surfaceCtr, color: filterCat===c?C.primary:C.onVariant, cursor:"pointer", transition:"all .18s" }}>{c}</button>
@@ -516,7 +459,7 @@ export default function NeonLuminary() {
                 {searchResults.length === 0
                   ? <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:14, padding:40 }}>
                       <span style={{ fontSize:44, opacity:.3 }}>○</span>
-                      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:14, fontWeight:700, color:C.onVariant, textAlign:"center" }}>No stories match your search</span>
+                      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:14, fontWeight:700, color:C.onVariant, textAlign:"center" }}>No stories match</span>
                     </div>
                   : searchResults.map(n => (
                     <div key={n.id} onClick={()=>jumpToStory(n.id)}
@@ -530,12 +473,11 @@ export default function NeonLuminary() {
                     </div>
                   ))
                 }
-                <div style={{ height:8 }} />
               </div>
             </div>
           )}
 
-          {/* ── SAVED ────────────────────────────────────────── */}
+          {/* ── SAVED ── */}
           {tab === "saved" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
               <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
@@ -560,18 +502,26 @@ export default function NeonLuminary() {
                     </div>
                   ))
                 }
-                <div style={{ height:8 }} />
               </div>
             </div>
           )}
 
-          {/* ── SETTINGS ─────────────────────────────────────── */}
+          {/* ── SETTINGS ── */}
           {tab === "settings" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
               <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
                 <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:22, fontWeight:700, letterSpacing:"-.5px", color:C.onSurface }}>Profile</div>
               </div>
               <div style={{ flex:1, overflowY:"auto", paddingBottom:16 }}>
+                {/* About */}
+                <div style={{ margin:"0 14px 16px", padding:"16px 18px", background:C.surfaceCtr, borderRadius:16, border:`1px solid ${C.outlineFaint}` }}>
+                  <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, color:C.primary, marginBottom:6 }}>◈ Neon Luminary</div>
+                  <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, color:C.onVariant, lineHeight:1.6 }}>
+                    Curated daily AI briefing — updated every 24 hours. No tracking, no ads, no API keys.
+                  </div>
+                  {updatedAt && <div style={{ marginTop:10, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, color:C.onVariant, textTransform:"uppercase" }}>Last updated: {fmtDate(updatedAt)}</div>}
+                </div>
+
                 {[
                   { label:"Summary Length", sub:"S = 100 · M = 150 · L = 200 words", ctrl:<div style={{ display:"flex", background:C.surfaceTop, borderRadius:10, padding:3, gap:2 }}>
                     {["S","M","L"].map(s=><button key={s} onClick={()=>setSumLen(s)} style={{ padding:"6px 12px", borderRadius:8, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", cursor:"pointer", background:sumLen===s?C.primary:"transparent", color:sumLen===s?"#000e3a":C.onVariant, border:"none", transition:"all .18s" }}>{s}</button>)}
@@ -581,7 +531,7 @@ export default function NeonLuminary() {
                   </div> },
                 ].map(({label,sub,ctrl}) => (
                   <div key={label}>
-                    <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant, padding:"18px 18px 8px" }}>{label}</div>
+                    <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant, padding:"12px 18px 8px" }}>{label}</div>
                     <div style={{ background:C.surfaceCtr, borderRadius:16, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 4px", padding:"15px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:14 }}>
                       <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:500, letterSpacing:.5, color:C.onVariant }}>{sub}</div>
                       {ctrl}
@@ -599,18 +549,6 @@ export default function NeonLuminary() {
                   </div>
                   <div style={{ marginTop:12, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, color:C.onVariant, textTransform:"uppercase" }}>Selected categories filter your feed</div>
                 </div>
-
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant, padding:"18px 18px 8px" }}>Live AI News</div>
-                <div style={{ padding:"0 14px 8px" }}>
-                  <button onClick={()=>fetchLive(false)} disabled={fetching}
-                    style={{ width:"100%", padding:14, borderRadius:12, cursor:"pointer", border:"none", background:`linear-gradient(135deg,${C.primary},rgba(193,128,255,0.9))`, fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", color:"#000e3a", display:"flex", alignItems:"center", justifyContent:"center", gap:10, opacity:fetching?.5:1, boxShadow:"0 4px 24px rgba(151,169,255,0.2)" }}>
-                    {fetching
-                      ? <><div style={{ width:16, height:16, border:"2px solid rgba(0,14,58,0.3)", borderTopColor:"#000e3a", borderRadius:"50%", animation:"spin .7s linear infinite" }} /><span>Fetching live stories…</span></>
-                      : <><span>↻</span><span>Refresh Now</span></>
-                    }
-                  </button>
-                  {lastFetch && <div style={{ marginTop:10, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, color:C.onVariant, textTransform:"uppercase", textAlign:"center" }}>Last updated: {lastFetch.toLocaleString()} · Auto-refreshes every 10 min</div>}
-                </div>
               </div>
             </div>
           )}
@@ -626,7 +564,7 @@ export default function NeonLuminary() {
 
         {/* Bottom nav */}
         <nav style={S.nav}>
-          {TABS.map((t,i) => <NavBtn key={t.id} t={t} i={i} />)}
+          {TABS.map((t) => <NavBtn key={t.id} t={t} />)}
           <div style={{ ...S.navInd, left:`${tabIdx*20+10}%`, transform:"translateX(-50%)" }} />
         </nav>
       </div>
