@@ -1,27 +1,34 @@
 import Head from "next/head";
 import { useState, useRef, useEffect, useCallback } from "react";
 
-/* ── Design Tokens ─────────────────────────────────────────── */
-const C = {
-  surface:      "#0e0e0f",
-  surfaceCtr:   "#19191b",
-  surfaceLow:   "#131314",
-  surfaceHigh:  "#201f21",
-  surfaceTop:   "#262627",
-  surfaceBrt:   "#2c2c2d",
-  primary:      "#97a9ff",
-  secondary:    "#c180ff",
-  tertiary:     "#a0ffc4",
-  onSurface:    "#ffffff",
-  onVariant:    "#adaaab",
-  outlineFaint: "rgba(72,72,73,0.15)",
-  primaryGlow:  "rgba(151,169,255,0.08)",
-  tertiaryGlow: "rgba(160,255,196,0.08)",
-  shadow:       "0 0 15px rgba(151,169,255,0.05)",
+/* ── Design Tokens (DESIGN.md) ──────────────────────────────── */
+const themes = {
+  light: {
+    bg: "#f5f0e8", bgEl: "#ece7dd", bgHi: "#e2ddd3",
+    text: "#1a1816", muted: "#6b6560", faint: "#9a9590",
+    accent: "#c45a2d", accentMuted: "rgba(196,90,45,0.12)",
+    rule: "rgba(26,24,22,0.12)", ruleStrong: "rgba(26,24,22,0.25)",
+    success: "#3d7a4a", warning: "#b5882a", error: "#b94040", info: "#4a6b8a",
+    navBg: "rgba(245,240,232,0.92)", toastBg: "#e2ddd3",
+  },
+  dark: {
+    bg: "#111113", bgEl: "#1a1a1d", bgHi: "#242428",
+    text: "#ede9e1", muted: "#8a8680", faint: "#5a5652",
+    accent: "#d4874a", accentMuted: "rgba(212,135,74,0.15)",
+    rule: "rgba(237,233,225,0.1)", ruleStrong: "rgba(237,233,225,0.2)",
+    success: "#6bc77a", warning: "#d4a24e", error: "#e05c5c", info: "#7c8aaa",
+    navBg: "rgba(17,17,19,0.92)", toastBg: "#242428",
+  },
+};
+
+const F = {
+  display: "'Instrument Serif',Georgia,serif",
+  body: "'DM Sans',-apple-system,sans-serif",
+  mono: "'Geist Mono',monospace",
 };
 
 const CATS = ["LLMs","Tools","Startups","Research","Coding AI","Business"];
-const WL   = { S:30, M:60, L:9999 };
+const WL = { S:30, M:60, L:9999 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
@@ -34,10 +41,6 @@ const getSummary = (item, mode, len) => {
              : item.summary;
   return trunc(text, lim);
 };
-const catColor = (cat) => ({
-  LLMs: C.primary, Tools: C.tertiary, Startups: "#ff9070",
-  Research: C.tertiary, "Coding AI": C.secondary, Business: "#7dd3fc",
-}[cat] || C.primary);
 
 const fmtDate = (iso) => {
   if (!iso) return null;
@@ -45,7 +48,7 @@ const fmtDate = (iso) => {
   return d.toLocaleDateString([], { month:"short", day:"numeric" }) + " · " + d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
 };
 
-/* ── Persistence helpers ────────────────────────────────────── */
+/* ── Persistence ────────────────────────────────────────────── */
 const load = (key, fallback) => {
   if (typeof window === "undefined") return fallback;
   try { const v = localStorage.getItem("nl_" + key); return v ? JSON.parse(v) : fallback; }
@@ -57,61 +60,59 @@ const save = (key, val) => {
 
 /* ── Main App ──────────────────────────────────────────────── */
 export default function NeonLuminary() {
-  const [news,       setNews]      = useState([]);
-  const [updatedAt,  setUpdatedAt] = useState(null);
-  const [loading,    setLoading]   = useState(true);
-  const [rawPage,    setRawPage]   = useState(0);
-  const [tab,        setTab]       = useState("feed");
-  const [sumLen,     setSumLen]    = useState("M");
-  const [aiMode,     setAiMode]    = useState("Technical");
-  const [bookmarks,  setBookmarks] = useState([]);
-  const [reactions,  setReactions] = useState({});
-  const [interests,  setInterests] = useState(["LLMs","Tools","Coding AI"]);
-  const [searchQ,    setSearchQ]   = useState("");
-  const [filterCat,  setFilterCat] = useState("All");
-  const [toast,      setToast]     = useState(null);
-  const [slideDir,   setSlideDir]  = useState("r");
-  const [slideKey,   setSlideKey]  = useState(0);
-  const [audioOn,    setAudioOn]   = useState(false);
-  const [hydrated,   setHydrated]  = useState(false);
+  const [news, setNews] = useState([]);
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [rawPage, setRawPage] = useState(0);
+  const [tab, setTab] = useState("feed");
+  const [sumLen, setSumLen] = useState("M");
+  const [aiMode, setAiMode] = useState("Technical");
+  const [bookmarks, setBookmarks] = useState([]);
+  const [reactions, setReactions] = useState({});
+  const [interests, setInterests] = useState(["LLMs","Tools","Coding AI"]);
+  const [searchQ, setSearchQ] = useState("");
+  const [filterCat, setFilterCat] = useState("All");
+  const [toast, setToast] = useState(null);
+  const [slideDir, setSlideDir] = useState("r");
+  const [slideKey, setSlideKey] = useState(0);
+  const [audioOn, setAudioOn] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [dark, setDark] = useState(false);
 
-  /* Restore persisted state on mount */
+  const T = dark ? themes.dark : themes.light;
+
   useEffect(() => {
     setSumLen(load("sumLen", "M"));
     setAiMode(load("aiMode", "Technical"));
     setBookmarks(load("bookmarks", []));
     setReactions(load("reactions", {}));
     setInterests(load("interests", ["LLMs","Tools","Coding AI"]));
+    setDark(load("dark", false));
     setHydrated(true);
   }, []);
 
-  /* Persist on change (skip initial hydration) */
   useEffect(() => { if (hydrated) save("sumLen", sumLen); }, [sumLen, hydrated]);
   useEffect(() => { if (hydrated) save("aiMode", aiMode); }, [aiMode, hydrated]);
   useEffect(() => { if (hydrated) save("bookmarks", bookmarks); }, [bookmarks, hydrated]);
   useEffect(() => { if (hydrated) save("reactions", reactions); }, [reactions, hydrated]);
   useEffect(() => { if (hydrated) save("interests", interests); }, [interests, hydrated]);
+  useEffect(() => { if (hydrated) save("dark", dark); }, [dark, hydrated]);
 
-  /* Load static JSON on mount */
   useEffect(() => {
     fetch("/news-data.json")
       .then(r => r.json())
-      .then(data => {
-        setNews(data.stories || []);
-        setUpdatedAt(data.updatedAt || null);
-        setLoading(false);
-      })
+      .then(data => { setNews(data.stories || []); setUpdatedAt(data.updatedAt || null); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
   /* Derived */
-  const feed        = interests.length ? news.filter(n => interests.includes(n.cat)) : news;
+  const feed = interests.length ? news.filter(n => interests.includes(n.cat)) : news;
   const displayNews = feed.length ? feed : news;
-  const page        = Math.min(rawPage, Math.max(0, displayNews.length - 1));
-  const item        = displayNews[page] ?? displayNews[0];
+  const page = Math.min(rawPage, Math.max(0, displayNews.length - 1));
+  const item = displayNews[page] ?? displayNews[0];
 
   const searchResults = news.filter(n => {
-    const q  = searchQ.toLowerCase();
+    const q = searchQ.toLowerCase();
     const mq = !q || n.title.toLowerCase().includes(q) || n.cat.toLowerCase().includes(q) || n.src.toLowerCase().includes(q);
     const mc = filterCat === "All" || n.cat === filterCat;
     return mq && mc;
@@ -128,11 +129,11 @@ export default function NeonLuminary() {
     return sb - sa;
   });
   const toolList = news.filter(n => n.tool);
-  const related  = displayNews.filter((_,i) => i !== page).slice(0,3);
+  const related = displayNews.filter((_,i) => i !== page).slice(0,3);
 
   /* Refs */
   const toastTimer = useRef(null);
-  const dragRef    = useRef({ x:null, active:false });
+  const dragRef = useRef({ x:null, active:false });
 
   const toast$ = useCallback((msg, icon="✦") => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -148,77 +149,32 @@ export default function NeonLuminary() {
     setSlideKey(k => k+1);
     setRawPage(next);
   };
-  const jumpPage = (i) => {
-    setSlideDir(i > page ? "r" : "l");
-    setSlideKey(k => k+1);
-    setRawPage(i);
-  };
-  const jumpToStory = (id) => {
-    const i = displayNews.findIndex(n => n.id === id);
-    setRawPage(Math.max(0, i));
-    setSlideKey(k => k+1);
-    setTab("feed");
-  };
+  const jumpPage = (i) => { setSlideDir(i > page ? "r" : "l"); setSlideKey(k => k+1); setRawPage(i); };
+  const jumpToStory = (id) => { const i = displayNews.findIndex(n => n.id === id); setRawPage(Math.max(0, i)); setSlideKey(k => k+1); setTab("feed"); };
 
   /* Swipe */
   const onTS = e => { dragRef.current = { x:e.touches[0].clientX, active:true }; };
-  const onTE = e => {
-    if (!dragRef.current.active) return;
-    const dx = e.changedTouches[0].clientX - dragRef.current.x;
-    if (Math.abs(dx) > 40) goPage(dx < 0 ? 1 : -1);
-    dragRef.current.active = false;
-  };
+  const onTE = e => { if (!dragRef.current.active) return; const dx = e.changedTouches[0].clientX - dragRef.current.x; if (Math.abs(dx) > 40) goPage(dx < 0 ? 1 : -1); dragRef.current.active = false; };
   const onMD = e => { dragRef.current = { x:e.clientX, active:true }; };
-  const onMU = e => {
-    if (!dragRef.current.active) return;
-    const dx = e.clientX - dragRef.current.x;
-    if (Math.abs(dx) > 40) goPage(dx < 0 ? 1 : -1);
-    dragRef.current.active = false;
-  };
+  const onMU = e => { if (!dragRef.current.active) return; const dx = e.clientX - dragRef.current.x; if (Math.abs(dx) > 40) goPage(dx < 0 ? 1 : -1); dragRef.current.active = false; };
 
-  const toggleBkm = (id) => {
-    const has = bookmarks.includes(id);
-    setBookmarks(b => has ? b.filter(x=>x!==id) : [...b, id]);
-    toast$(has ? "Bookmark removed" : "Saved", "◇");
-  };
-  const toggleRx = (id, type) =>
-    setReactions(r => ({ ...r, [id]: r[id]===type ? null : type }));
+  const toggleBkm = (id) => { const has = bookmarks.includes(id); setBookmarks(b => has ? b.filter(x=>x!==id) : [...b, id]); toast$(has ? "Removed" : "Saved", "◇"); };
+  const toggleRx = (id, type) => setReactions(r => ({ ...r, [id]: r[id]===type ? null : type }));
 
   const audioRef = useRef(null);
-
-  const stopAudio = () => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-    setAudioOn(false);
-  };
-
+  const stopAudio = () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } setAudioOn(false); };
   const playAudio = async (it) => {
     if (audioOn) { stopAudio(); return; }
-    setAudioOn(true);
-    toast$("Generating audio…", "◎");
-
+    setAudioOn(true); toast$("Generating…", "◎");
     try {
-      const resp = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: it.title,
-          summary: getSummary(it, aiMode, "L"),
-          whyItMatters: it.whyItMatters,
-        }),
-      });
+      const resp = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: it.title, summary: getSummary(it, aiMode, "L"), whyItMatters: it.whyItMatters }) });
       if (!resp.ok) throw new Error("api");
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
+      const blob = await resp.blob(); const url = URL.createObjectURL(blob);
+      const audio = new Audio(url); audioRef.current = audio;
       audio.onended = () => { stopAudio(); URL.revokeObjectURL(url); };
       audio.onerror = () => { stopAudio(); URL.revokeObjectURL(url); };
-      audio.play();
-      toast$("Playing briefing…", "▶");
-    } catch {
-      setAudioOn(false);
-      toast$("Audio unavailable", "✕");
-    }
+      audio.play(); toast$("Playing…", "▶");
+    } catch { setAudioOn(false); toast$("Audio unavailable", "✕"); }
   };
 
   const share = (it) => {
@@ -228,117 +184,73 @@ export default function NeonLuminary() {
   };
 
   const TABS = [
-    { id:"feed",     icon:"⌂",  label:"Home"   },
-    { id:"hot",      icon:"↑",  label:"Trends" },
-    { id:"search",   icon:"○",  label:"Search" },
-    { id:"saved",    icon:"◇",  label:"Saved"  },
-    { id:"settings", icon:"◈",  label:"Profile"},
+    { id:"feed", icon:"◈", label:"Home" },
+    { id:"hot", icon:"↑", label:"Trends" },
+    { id:"search", icon:"○", label:"Search" },
+    { id:"saved", icon:"◇", label:"Saved" },
+    { id:"settings", icon:"◉", label:"Profile" },
   ];
-  const tabIdx = TABS.findIndex(t => t.id === tab);
 
-  /* ── Styles ── */
-  const S = {
-    app: { minHeight:"100dvh", background:C.surface, color:C.onSurface, display:"flex", flexDirection:"column", maxWidth:480, margin:"0 auto", position:"relative" },
-    hdr: { position:"sticky", top:0, zIndex:50, height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", background:"rgba(14,14,15,0.85)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:`1px solid ${C.outlineFaint}`, boxShadow:C.shadow },
-    logo: { fontFamily:"'Space Grotesk',sans-serif", fontSize:15, fontWeight:700, letterSpacing:"-.5px", color:C.primary, textTransform:"uppercase", display:"flex", alignItems:"center", gap:8 },
-    hdrR: { display:"flex", alignItems:"center", gap:10 },
-    freshBadge: { display:"flex", alignItems:"center", gap:5, background:"rgba(160,255,196,.1)", border:"1px solid rgba(160,255,196,.2)", borderRadius:100, padding:"3px 10px", fontFamily:"'Space Grotesk',sans-serif", fontSize:8, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", color:C.tertiary },
-    freshDot: { width:6, height:6, borderRadius:"50%", background:C.tertiary, animation:"pulseGlow 1.4s ease infinite" },
-    cardShell: { background:C.surfaceCtr, borderRadius:16, overflow:"hidden", border:`1px solid ${C.outlineFaint}`, boxShadow:"0 4px 24px rgba(0,0,0,0.4)", margin:"14px 14px 0" },
-    hero: { height:220, position:"relative", overflow:"hidden", background:C.surfaceHigh, display:"flex", alignItems:"center", justifyContent:"center" },
-    heroEmoji: { fontSize:110, opacity:.18, filter:"grayscale(1)" },
-    heroFade: { position:"absolute", inset:0, background:`linear-gradient(to top,${C.surfaceCtr} 0%,rgba(14,14,15,0.5) 50%,transparent 100%)` },
-    heroBottom: { position:"absolute", bottom:0, left:0, right:0, padding:16 },
-    featBadge: { display:"inline-flex", alignItems:"center", gap:6, background:"rgba(160,255,196,0.12)", border:"1px solid rgba(160,255,196,0.15)", backdropFilter:"blur(8px)", borderRadius:100, padding:"3px 10px", fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", color:C.tertiary, marginBottom:10 },
-    featDot: { width:6, height:6, borderRadius:"50%", background:C.tertiary, animation:"pulseGlow 1.8s ease infinite" },
-    heroTitle: { fontFamily:"'Space Grotesk',sans-serif", fontSize:21, fontWeight:700, letterSpacing:"-.5px", lineHeight:1.2, color:C.onSurface },
-    cardBody: { padding:"18px 18px 20px" },
-    why: { background:C.tertiaryGlow, borderRadius:12, borderLeft:`2px solid rgba(160,255,196,0.5)`, padding:"14px 16px", marginBottom:18 },
-    whyLbl: { fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.tertiary, marginBottom:8, display:"flex", alignItems:"center", gap:6 },
-    whyText: { fontSize:13, fontWeight:500, color:C.onSurface, lineHeight:1.55 },
-    metaRow: { display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:`1px solid ${C.outlineFaint}`, paddingBottom:14, marginBottom:18 },
-    smlWrap: { display:"flex", background:C.surfaceTop, borderRadius:100, padding:3, gap:2 },
-    modeRow: { display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" },
-    actRow:  { display:"flex", alignItems:"center", gap:8, marginBottom:16 },
-    tags:    { display:"flex", gap:6, flexWrap:"wrap", marginBottom:16 },
-    dots:    { position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", gap:5, pointerEvents:"none" },
-    nav:     { height:68, display:"flex", alignItems:"center", justifyContent:"space-around", background:"rgba(14,14,15,0.9)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderTop:`1px solid ${C.outlineFaint}`, flexShrink:0, paddingBottom:4, position:"relative" },
-    navInd:  { position:"absolute", bottom:0, height:2, width:24, background:`linear-gradient(90deg,${C.primary},${C.secondary})`, borderRadius:2, transition:"left .3s cubic-bezier(.22,.68,0,1.2)" },
-    secHdr:  { fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:"rgba(173,170,171,.6)", display:"flex", alignItems:"center", gap:10, padding:"0 14px", marginBottom:12 },
-    secLine: { flex:1, height:1, background:C.outlineFaint },
-    toast:   { position:"fixed", bottom:80, left:"50%", transform:"translateX(-50%)", width:"calc(100% - 28px)", maxWidth:452, background:C.surfaceBrt, backdropFilter:"blur(20px)", borderRadius:12, border:`1px solid ${C.outlineFaint}`, padding:"13px 16px", display:"flex", alignItems:"center", gap:10, boxShadow:"0 8px 32px rgba(0,0,0,0.5)", zIndex:9999, animation:"toastIn .22s ease both" },
-  };
+  /* ── Shared styles ── */
+  const label = { fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:2.5, textTransform:"uppercase", color:T.faint };
+  const catLabel = { fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:2, textTransform:"uppercase", color:T.accent };
+  const headline = (sz=28) => ({ fontFamily:F.display, fontSize:sz, fontWeight:400, lineHeight:1.12, letterSpacing:sz > 30 ? "-0.5px" : "-0.3px", color:T.text });
+  const bodyText = { fontFamily:F.body, fontSize:14, color:T.muted, lineHeight:1.65 };
+  const meta = { fontFamily:F.mono, fontSize:10, fontWeight:500, color:T.faint, letterSpacing:0.5 };
+  const rule = { borderBottom:`1px solid ${T.rule}` };
+  const pad = { padding:"0 24px" };
 
-  /* ── btn helpers ── */
-  const SmlBtn = ({s}) => (
-    <button onClick={()=>setSumLen(s)} style={{ width:26, height:26, borderRadius:100, fontFamily:"'Space Grotesk',sans-serif", fontSize:10, fontWeight:700, cursor:"pointer", border:"none", background: sumLen===s ? C.primary : "transparent", color: sumLen===s ? "#000e3a" : C.onVariant, transition:"all .18s", display:"flex", alignItems:"center", justifyContent:"center" }}>{s}</button>
-  );
-  const ModeBtn = ({m}) => (
-    <button onClick={()=>setAiMode(m)} style={{ padding:"5px 12px", borderRadius:100, border:`1px solid ${aiMode===m ? "rgba(151,169,255,0.4)" : C.outlineFaint}`, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", color: aiMode===m ? C.primary : C.onVariant, cursor:"pointer", background: aiMode===m ? "rgba(151,169,255,0.15)" : "none", transition:"all .18s" }}>{m}</button>
+  /* ── Btn helpers ── */
+  const PillBtn = ({label:l, on, onClick}) => (
+    <button onClick={onClick} style={{ padding:"5px 12px", borderRadius:2, border:`1px solid ${on ? T.accent : T.rule}`, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background: on ? T.accentMuted : "transparent", color: on ? T.accent : T.faint, cursor:"pointer", transition:"all .15s" }}>{l}</button>
   );
   const RxBtn = ({id, type, emoji}) => {
     const on = reactions[id]===type;
     return (
-      <button onClick={()=>toggleRx(id,type)} style={{ display:"flex", alignItems:"center", gap:6, background: on ? (type==="like"?"rgba(151,169,255,0.18)":"rgba(255,120,80,0.15)") : C.surfaceHigh, border:`1px solid ${on ? (type==="like"?"rgba(151,169,255,0.4)":"rgba(255,120,80,0.35)") : C.outlineFaint}`, borderRadius:100, padding:"7px 14px", fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, color: on ? (type==="like"?C.primary:"#ff9070") : C.onVariant, cursor:"pointer", transition:"all .18s" }}>
-        {emoji} <span style={{ fontFamily:"monospace", fontSize:10 }}>{getCnt(id,type)}</span>
+      <button onClick={()=>toggleRx(id,type)} style={{ display:"flex", alignItems:"center", gap:6, background: on ? T.accentMuted : T.bgEl, border:`1px solid ${on ? T.accent : T.rule}`, borderRadius:2, padding:"7px 14px", fontFamily:F.body, fontSize:12, fontWeight:600, color: on ? T.accent : T.muted, cursor:"pointer", transition:"all .15s" }}>
+        {emoji} <span style={{ fontFamily:F.mono, fontSize:10 }}>{getCnt(id,type)}</span>
       </button>
     );
   };
   const IcoBtn = ({ico, on, onClick}) => (
-    <button onClick={onClick} style={{ width:36, height:36, background: on?"rgba(151,169,255,0.18)":C.surfaceHigh, border:`1px solid ${on?"rgba(151,169,255,0.4)":C.outlineFaint}`, borderRadius:100, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:14, color: on?C.primary:C.onVariant, transition:"all .18s", flexShrink:0 }}>{ico}</button>
+    <button onClick={onClick} style={{ width:36, height:36, background: on ? T.accentMuted : T.bgEl, border:`1px solid ${on ? T.accent : T.rule}`, borderRadius:2, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:14, color: on ? T.accent : T.muted, transition:"all .15s", flexShrink:0 }}>{ico}</button>
   );
-  const Tag = ({t}) => {
-    const styles = { Free:{ bg:"rgba(160,255,196,.12)", color:C.tertiary, b:"rgba(160,255,196,.2)" }, Paid:{ bg:"rgba(255,160,90,.1)", color:"#ffb07a", b:"rgba(255,160,90,.2)" }, "Open-source":{ bg:"rgba(193,128,255,.12)", color:C.secondary, b:"rgba(193,128,255,.2)" }, Tool:{ bg:"rgba(151,169,255,.1)", color:C.primary, b:"rgba(151,169,255,.2)" } };
-    const s = styles[t] || styles.Tool;
-    return <span style={{ padding:"3px 10px", borderRadius:100, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", background:s.bg, color:s.color, border:`1px solid ${s.b}` }}>{t}</span>;
-  };
-  const NavBtn = ({t}) => (
-    <button onClick={()=>setTab(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, cursor:"pointer", padding:"6px 14px", background:"none", border:"none", transition:"opacity .18s" }}>
-      <span style={{ fontSize:20, color: tab===t.id ? C.primary : C.onVariant, transition:"transform .2s", transform: tab===t.id?"translateY(-2px)":"none" }}>{t.icon}</span>
-      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:8, fontWeight:700, letterSpacing:1, textTransform:"uppercase", color: tab===t.id ? C.primary : C.onVariant }}>{t.label}</span>
-    </button>
+  const Tag = ({t}) => (
+    <span style={{ padding:"3px 10px", borderRadius:2, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background:T.accentMuted, color:T.accent }}>{t}</span>
   );
 
-  /* Loading skeleton */
+  /* Loading */
   if (loading) return (
-    <div style={{ minHeight:"100dvh", background:C.surface, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16 }}>
-      <div style={{ width:40, height:40, border:`3px solid rgba(151,169,255,0.15)`, borderTopColor:C.primary, borderRadius:"50%", animation:"spin .7s linear infinite" }} />
-      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant }}>Loading briefing…</span>
+    <div style={{ minHeight:"100dvh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16, transition:"background .3s" }}>
+      <div style={{ width:32, height:32, border:`2px solid ${T.rule}`, borderTopColor:T.accent, borderRadius:"50%", animation:"spin .7s linear infinite" }} />
+      <span style={{ ...label, color:T.muted }}>Loading briefing…</span>
       <style>{`@keyframes spin { to { transform:rotate(360deg) } }`}</style>
     </div>
   );
 
-  /* ── Render ── */
   return (
     <>
       <Head>
         <title>Neon Luminary | AI Briefing</title>
-        <meta name="description" content="Daily curated AI news, tools, and research briefings — updated every 24 hours." />
+        <meta name="description" content="Daily curated AI news, tools, and research briefings." />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#0e0e0f" />
-        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content={T.bg} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translacent" />
         <meta property="og:title" content="Neon Luminary | AI Briefing" />
-        <meta property="og:description" content="Daily curated AI news — updated every 24 hours." />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </Head>
 
-      <div style={S.app}>
+      <div style={{ minHeight:"100dvh", background:T.bg, color:T.text, display:"flex", flexDirection:"column", maxWidth:480, margin:"0 auto", position:"relative", transition:"background .3s, color .3s" }}>
+
         {/* Header */}
-        <header style={S.hdr}>
-          <div style={S.logo}>◈ Neon Luminary</div>
-          <div style={S.hdrR}>
-            {updatedAt && (
-              <div style={S.freshBadge}>
-                <span style={S.freshDot} />
-                {fmtDate(updatedAt)}
-              </div>
-            )}
-            <button onClick={()=>setTab("settings")} style={{ width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", color:C.primary, cursor:"pointer", fontSize:18, borderRadius:8 }}>◉</button>
+        <header style={{ position:"sticky", top:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", background:T.navBg, backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:`1px solid ${T.ruleStrong}` }}>
+          <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, color:T.text, letterSpacing:"-0.3px" }}>Neon Luminary</div>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            {updatedAt && <span style={meta}>{fmtDate(updatedAt)}</span>}
+            <button onClick={()=>setDark(d=>!d)} style={{ background:"none", border:`1px solid ${T.rule}`, borderRadius:2, padding:"4px 10px", fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1, color:T.faint, cursor:"pointer" }}>{dark?"LIGHT":"DARK"}</button>
           </div>
         </header>
 
@@ -349,143 +261,135 @@ export default function NeonLuminary() {
           {tab === "feed" && item && (
             <div style={{ position:"absolute", inset:0 }}>
               <div style={{ position:"absolute", inset:0, overflowY:"auto" }}
-                onTouchStart={onTS} onTouchEnd={onTE}
-                onMouseDown={onMD} onMouseUp={onMU}>
+                onTouchStart={onTS} onTouchEnd={onTE} onMouseDown={onMD} onMouseUp={onMU}>
 
                 <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
-                  <div style={S.cardShell}>
-                    <div style={S.hero}>
-                      <span style={S.heroEmoji}>{item.e}</span>
-                      <div style={S.heroFade} />
-                      <div style={S.heroBottom}>
-                        <div style={S.featBadge}>
-                          <span style={S.featDot} />
-                          Featured: {item.cat}
-                        </div>
-                        <div style={S.heroTitle}>{item.title}</div>
-                      </div>
-                      <div style={{ position:"absolute", top:12, right:14, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, color:C.onVariant, letterSpacing:1 }}>
-                        {page+1} / {displayNews.length}
-                      </div>
+                  <div style={{ ...pad, paddingTop:24 }}>
+                    {/* Category + counter */}
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                      <span style={catLabel}>{item.cat}</span>
+                      <span style={meta}>{page+1} / {displayNews.length}</span>
                     </div>
 
-                    <div style={S.cardBody}>
-                      <div style={S.why}>
-                        <div style={S.whyLbl}>💡 Why It Matters</div>
-                        <div style={S.whyText}>{item.whyItMatters}</div>
-                      </div>
+                    {/* Headline — extreme scale */}
+                    <h1 style={headline(42)}>{item.title}</h1>
 
-                      <div style={S.metaRow}>
-                        <div style={{ display:"flex", gap:10 }}>
-                          <span style={{ display:"flex", alignItems:"center", gap:4, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, textTransform:"uppercase", color:C.onVariant }}>
-                            ⏱ {Math.max(1, Math.ceil(getSummary(item,aiMode,sumLen).split(" ").length/200))} min
-                          </span>
-                          <span style={{ display:"flex", alignItems:"center", gap:4, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, textTransform:"uppercase", color:C.onVariant }}>
-                            ◎ {(getCnt(item.id,"like")+getCnt(item.id,"fire")).toLocaleString()}
-                          </span>
-                        </div>
-                        <div style={S.smlWrap}>
-                          {["S","M","L"].map(s => <SmlBtn key={s} s={s} />)}
-                        </div>
-                      </div>
-
-                      <div style={S.modeRow}>
-                        {["ELI5","Technical","Business"].map(m => <ModeBtn key={m} m={m} />)}
-                      </div>
-
-                      <p style={{ fontSize:14, color:C.onVariant, lineHeight:1.75, marginBottom:16 }}>{getSummary(item,aiMode,sumLen)}</p>
-
-                      {item.tags?.length > 0 && (
-                        <div style={S.tags}>
-                          {item.tool && <Tag t="Tool" />}
-                          {item.tags.map(t => <Tag key={t} t={t} />)}
-                        </div>
-                      )}
-
-                      <div style={S.actRow}>
-                        <RxBtn id={item.id} type="like" emoji="👍" />
-                        <RxBtn id={item.id} type="fire" emoji="🔥" />
-                        <div style={{ flex:1 }} />
-                        <IcoBtn ico={audioOn?"⏹":"▶"} on={audioOn}       onClick={()=>playAudio(item)} />
-                        <IcoBtn ico="◇"                on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
-                        <IcoBtn ico="↗"                on={false}         onClick={()=>share(item)} />
-                      </div>
-
-                      <a href={item.url} target="_blank" rel="noreferrer"
-                        style={{ display:"flex", alignItems:"center", gap:6, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", color:C.tertiary, textDecoration:"none" }}>
-                        Read on {item.src} <span>→</span>
-                      </a>
+                    {/* Meta row */}
+                    <div style={{ display:"flex", gap:16, alignItems:"center", padding:"16px 0", ...rule, marginBottom:20 }}>
+                      <span style={meta}>{item.src}</span>
+                      <span style={{ width:4, height:4, borderRadius:"50%", background:T.accent }} />
+                      <span style={meta}>{Math.max(1, Math.ceil(getSummary(item,aiMode,sumLen).split(" ").length/200))} min read</span>
+                      <span style={meta}>{(getCnt(item.id,"like")+getCnt(item.id,"fire")).toLocaleString()} reactions</span>
                     </div>
-                  </div>
 
-                  {related.length > 0 && (
-                    <div style={{ marginTop:22, marginBottom:4 }}>
-                      <div style={S.secHdr}>
-                        <span style={S.secLine} />Related Intel<span style={S.secLine} />
+                    {/* Why It Matters */}
+                    <div style={{ borderLeft:`2px solid ${T.accent}`, background:T.accentMuted, borderRadius:"0 4px 4px 0", padding:"14px 16px", marginBottom:20 }}>
+                      <div style={{ ...catLabel, marginBottom:6 }}>Why It Matters</div>
+                      <div style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text, lineHeight:1.55 }}>{item.whyItMatters}</div>
+                    </div>
+
+                    {/* Controls row */}
+                    <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
+                      {["S","M","L"].map(s => <PillBtn key={s} label={s} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                      <span style={{ width:1, height:16, background:T.rule, margin:"0 4px" }} />
+                      {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={m} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                    </div>
+
+                    {/* Summary */}
+                    <p style={{ ...bodyText, marginBottom:20 }}>{getSummary(item,aiMode,sumLen)}</p>
+
+                    {/* Tags */}
+                    {item.tags?.length > 0 && (
+                      <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>
+                        {item.tool && <Tag t="Tool" />}
+                        {item.tags.map(t => <Tag key={t} t={t} />)}
                       </div>
+                    )}
+
+                    {/* Actions */}
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
+                      <RxBtn id={item.id} type="like" emoji="👍" />
+                      <RxBtn id={item.id} type="fire" emoji="🔥" />
+                      <div style={{ flex:1 }} />
+                      <IcoBtn ico={audioOn?"⏹":"▶"} on={audioOn} onClick={()=>playAudio(item)} />
+                      <IcoBtn ico="◇" on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
+                      <IcoBtn ico="↗" on={false} onClick={()=>share(item)} />
+                    </div>
+
+                    {/* Source link */}
+                    <a href={item.url} target="_blank" rel="noreferrer"
+                      style={{ fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:T.accent, textDecoration:"none" }}>
+                      Read on {item.src} →
+                    </a>
+
+                    {/* Divider */}
+                    <div style={{ height:1, background:T.ruleStrong, margin:"32px 0 24px" }} />
+
+                    {/* Related */}
+                    {related.length > 0 && <>
+                      <div style={{ ...label, marginBottom:16 }}>Related</div>
                       {related.map(r => (
                         <div key={r.id} onClick={()=>jumpToStory(r.id)}
-                          style={{ padding:"16px 18px", background:C.surfaceLow, borderRadius:12, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 8px", cursor:"pointer" }}>
-                          <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", color:catColor(r.cat), marginBottom:5 }}>{r.cat}</div>
-                          <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:13, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, lineHeight:1.35 }}>{r.title}</div>
+                          style={{ padding:"16px 0", ...rule, cursor:"pointer" }}>
+                          <div style={catLabel}>{r.cat}</div>
+                          <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, lineHeight:1.2, color:T.text, marginTop:4 }}>{r.title}</div>
                         </div>
                       ))}
-                    </div>
-                  )}
-                  <div style={{ height:24 }} />
+                    </>}
+                    <div style={{ height:24 }} />
+                  </div>
                 </div>
               </div>
 
-              <div style={S.dots}>
+              {/* Page dots */}
+              <div style={{ position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", gap:5, pointerEvents:"none" }}>
                 {displayNews.map((_,i) => (
                   <div key={i} onClick={()=>jumpPage(i)}
-                    style={{ height:3, width: i===page ? 26 : 14, borderRadius:2, background: i===page ? C.primary : "rgba(255,255,255,0.15)", transition:"all .25s", cursor:"pointer", pointerEvents:"all" }} />
+                    style={{ height:2, width: i===page ? 24 : 12, borderRadius:1, background: i===page ? T.accent : T.rule, transition:"all .25s", cursor:"pointer", pointerEvents:"all" }} />
                 ))}
               </div>
 
-              {page > 0 && (
-                <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:"rgba(14,14,15,0.7)", backdropFilter:"blur(12px)", border:"none", color:C.onSurface, fontSize:18, cursor:"pointer", width:30, height:52, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 8px 8px 0", opacity:.7 }}>‹</button>
-              )}
-              {page < displayNews.length-1 && (
-                <button onClick={()=>goPage(1)} style={{ position:"absolute", top:"50%", right:0, transform:"translateY(-50%)", background:"rgba(14,14,15,0.7)", backdropFilter:"blur(12px)", border:"none", color:C.onSurface, fontSize:18, cursor:"pointer", width:30, height:52, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"8px 0 0 8px", opacity:.7 }}>›</button>
-              )}
+              {/* Arrows */}
+              {page > 0 && <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderLeft:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 4px 4px 0" }}>‹</button>}
+              {page < displayNews.length-1 && <button onClick={()=>goPage(1)} style={{ position:"absolute", top:"50%", right:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderRight:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"4px 0 0 4px" }}>›</button>}
             </div>
           )}
 
-          {/* ── HOT ── */}
+          {/* ── TRENDING ── */}
           {tab === "hot" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:22, fontWeight:700, letterSpacing:"-.5px", color:C.onSurface, marginBottom:2 }}>Trending</div>
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:C.onVariant }}>Ranked by community signal</div>
+              <div style={{ ...pad, paddingTop:24, paddingBottom:12, flexShrink:0 }}>
+                <div style={headline(28)}>Trending</div>
+                <div style={{ ...label, marginTop:4 }}>Ranked by community signal</div>
               </div>
-              <div style={{ flex:1, overflowY:"auto", paddingBottom:8 }}>
+              <div style={{ flex:1, overflowY:"auto" }}>
                 {toolList.length > 0 && <>
-                  <div style={{ ...S.secHdr, marginBottom:10 }}><span style={S.secLine}/>Hot Tools<span style={S.secLine}/></div>
-                  <div style={{ display:"flex", gap:10, overflowX:"auto", padding:"0 14px 16px" }}>
+                  <div style={{ ...label, ...pad, marginBottom:12 }}>Hot Tools</div>
+                  <div style={{ display:"flex", gap:12, overflowX:"auto", padding:"0 24px 20px" }}>
                     {toolList.map(t => (
                       <div key={t.id} onClick={()=>jumpToStory(t.id)}
-                        style={{ flexShrink:0, width:110, padding:"16px 14px", background:C.surfaceCtr, borderRadius:12, border:`1px solid ${C.outlineFaint}`, cursor:"pointer" }}>
-                        <span style={{ fontSize:28, marginBottom:10, display:"block" }}>{t.e}</span>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, lineHeight:1.3, marginBottom:3 }}>{t.title.split(" ").slice(0,4).join(" ")}…</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:500, color:C.onVariant }}>{t.src}</div>
+                        style={{ flexShrink:0, width:120, padding:16, border:`1px solid ${T.rule}`, borderRadius:4, cursor:"pointer" }}>
+                        <span style={{ fontSize:28, display:"block", marginBottom:8 }}>{t.e}</span>
+                        <div style={{ fontFamily:F.display, fontSize:14, fontWeight:400, lineHeight:1.25, color:T.text, marginBottom:4 }}>{t.title.split(" ").slice(0,4).join(" ")}…</div>
+                        <div style={meta}>{t.src}</div>
                       </div>
                     ))}
                   </div>
                 </>}
-                <div style={{ ...S.secHdr, marginBottom:10 }}><span style={S.secLine}/>Top Stories<span style={S.secLine}/></div>
-                {trending.map((n,i) => (
-                  <div key={n.id} onClick={()=>jumpToStory(n.id)}
-                    style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", background:C.surfaceCtr, borderRadius:12, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 8px", cursor:"pointer" }}>
-                    <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:18, fontWeight:700, width:28, textAlign:"center", flexShrink:0, color: i<3?C.primary:C.onVariant }}>{i+1}</span>
-                    <span style={{ fontSize:24, flexShrink:0 }}>{n.e}</span>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:12, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, marginBottom:2, lineHeight:1.3 }}>{n.title}</div>
-                      <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, textTransform:"uppercase", color:C.onVariant }}>{n.cat} · {n.src}</div>
+                <div style={{ ...label, ...pad, marginBottom:8 }}>Top Stories</div>
+                <div style={pad}>
+                  {trending.map((n,i) => (
+                    <div key={n.id} onClick={()=>jumpToStory(n.id)}
+                      style={{ display:"flex", alignItems:"baseline", gap:14, padding:"14px 0", ...rule, cursor:"pointer" }}>
+                      <span style={{ fontFamily:F.display, fontSize:24, fontWeight:400, minWidth:28, textAlign:"right", flexShrink:0, color: i<3 ? T.accent : T.faint }}>{i+1}</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, lineHeight:1.2, color:T.text }}>{n.title}</div>
+                        <div style={{ ...meta, marginTop:4 }}>{n.cat} · {n.src}</div>
+                      </div>
+                      <span style={{ fontFamily:F.mono, fontSize:10, fontWeight:600, color:T.accent, flexShrink:0 }}>+{getCnt(n.id,"like")+getCnt(n.id,"fire")}</span>
                     </div>
-                    <span style={{ fontFamily:"monospace", fontSize:10, fontWeight:700, color:C.secondary, flexShrink:0 }}>+{getCnt(n.id,"like")+getCnt(n.id,"fire")}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
                 <div style={{ height:16 }} />
               </div>
             </div>
@@ -494,37 +398,34 @@ export default function NeonLuminary() {
           {/* ── SEARCH ── */}
           {tab === "search" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:22, fontWeight:700, letterSpacing:"-.5px", color:C.onSurface, marginBottom:14 }}>Discover</div>
-                <div style={{ display:"flex", alignItems:"center", gap:10, background:C.surfaceLow, borderRadius:12, border:`1px solid ${C.outlineFaint}`, padding:"0 14px", marginBottom:14 }}>
-                  <span style={{ fontSize:16, color:C.onVariant }}>○</span>
+              <div style={{ ...pad, paddingTop:24, paddingBottom:12, flexShrink:0 }}>
+                <div style={{ ...headline(28), marginBottom:16 }}>Discover</div>
+                <div style={{ display:"flex", alignItems:"center", gap:10, border:`1px solid ${T.rule}`, borderRadius:4, padding:"0 14px", marginBottom:14 }}>
+                  <span style={{ fontSize:14, color:T.faint }}>○</span>
                   <input placeholder="Search stories, sources…" value={searchQ} onChange={e=>setSearchQ(e.target.value)}
-                    style={{ flex:1, background:"none", border:"none", outline:"none", fontFamily:"'Space Grotesk',sans-serif", fontSize:13, fontWeight:500, color:C.onSurface, padding:"13px 0" }} />
+                    style={{ flex:1, background:"none", border:"none", outline:"none", fontFamily:F.body, fontSize:14, fontWeight:400, color:T.text, padding:"12px 0" }} />
                 </div>
                 <div style={{ display:"flex", gap:6, overflowX:"auto" }}>
-                  {["All",...CATS].map(c => (
-                    <button key={c} onClick={()=>setFilterCat(c)}
-                      style={{ padding:"5px 12px", borderRadius:100, flexShrink:0, border:`1px solid ${filterCat===c?"rgba(151,169,255,0.4)":C.outlineFaint}`, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", background: filterCat===c?"rgba(151,169,255,0.15)":C.surfaceCtr, color: filterCat===c?C.primary:C.onVariant, cursor:"pointer", transition:"all .18s" }}>{c}</button>
-                  ))}
+                  {["All",...CATS].map(c => <PillBtn key={c} label={c} on={filterCat===c} onClick={()=>setFilterCat(c)} />)}
                 </div>
               </div>
-              <div style={{ flex:1, overflowY:"auto", paddingBottom:8 }}>
+              <div style={{ flex:1, overflowY:"auto" }}>
                 {searchResults.length === 0
-                  ? <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:14, padding:40 }}>
-                      <span style={{ fontSize:44, opacity:.3 }}>○</span>
-                      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:14, fontWeight:700, color:C.onVariant, textAlign:"center" }}>No stories match</span>
+                  ? <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:12, padding:40 }}>
+                      <span style={{ fontFamily:F.display, fontSize:44, color:T.faint, opacity:.4 }}>○</span>
+                      <span style={{ fontFamily:F.body, fontSize:14, fontWeight:500, color:T.muted }}>No stories match</span>
                     </div>
-                  : searchResults.map(n => (
+                  : <div style={pad}>{searchResults.map(n => (
                     <div key={n.id} onClick={()=>jumpToStory(n.id)}
-                      style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", background:C.surfaceLow, borderRadius:12, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 8px", cursor:"pointer" }}>
+                      style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 0", ...rule, cursor:"pointer" }}>
                       <span style={{ fontSize:22, flexShrink:0 }}>{n.e}</span>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:12, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, marginBottom:3, lineHeight:1.3 }}>{n.title}</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, textTransform:"uppercase", color:C.onVariant }}>{n.cat} · {n.src}</div>
+                        <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, lineHeight:1.25, color:T.text, marginBottom:2 }}>{n.title}</div>
+                        <div style={meta}>{n.cat} · {n.src}</div>
                       </div>
-                      <span style={{ color:C.primary, fontSize:14, flexShrink:0 }}>›</span>
+                      <span style={{ color:T.accent, fontSize:14, flexShrink:0 }}>›</span>
                     </div>
-                  ))
+                  ))}</div>
                 }
               </div>
             </div>
@@ -533,27 +434,27 @@ export default function NeonLuminary() {
           {/* ── SAVED ── */}
           {tab === "saved" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:22, fontWeight:700, letterSpacing:"-.5px", color:C.onSurface, marginBottom:2 }}>Saved</div>
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:C.onVariant }}>{bookmarks.length} bookmarked</div>
+              <div style={{ ...pad, paddingTop:24, paddingBottom:12, flexShrink:0 }}>
+                <div style={headline(28)}>Saved</div>
+                <div style={{ ...label, marginTop:4 }}>{bookmarks.length} bookmarked</div>
               </div>
-              <div style={{ flex:1, overflowY:"auto", paddingBottom:8 }}>
+              <div style={{ flex:1, overflowY:"auto" }}>
                 {bookmarks.length === 0
-                  ? <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:14, padding:40, textAlign:"center" }}>
-                      <span style={{ fontSize:44, opacity:.3 }}>◇</span>
-                      <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:14, fontWeight:700, color:C.onVariant }}>Tap ◇ on any story to save it here</span>
+                  ? <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:12, padding:40 }}>
+                      <span style={{ fontFamily:F.display, fontSize:44, color:T.faint, opacity:.4 }}>◇</span>
+                      <span style={{ fontFamily:F.body, fontSize:14, fontWeight:500, color:T.muted, textAlign:"center" }}>Tap ◇ on any story to save it here</span>
                     </div>
-                  : news.filter(n=>bookmarks.includes(n.id)).map(n => (
+                  : <div style={pad}>{news.filter(n=>bookmarks.includes(n.id)).map(n => (
                     <div key={n.id} onClick={()=>jumpToStory(n.id)}
-                      style={{ display:"flex", gap:12, alignItems:"center", padding:"14px 18px", background:C.surfaceLow, borderRadius:12, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 8px", cursor:"pointer" }}>
-                      <div style={{ width:46, height:46, borderRadius:10, flexShrink:0, background:`linear-gradient(135deg,rgba(151,169,255,0.2),rgba(193,128,255,0.15))`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{n.e}</div>
+                      style={{ display:"flex", gap:12, alignItems:"center", padding:"14px 0", ...rule, cursor:"pointer" }}>
+                      <span style={{ fontSize:22, flexShrink:0 }}>{n.e}</span>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:12, fontWeight:700, letterSpacing:"-.2px", color:C.onSurface, marginBottom:3, lineHeight:1.3 }}>{n.title}</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, textTransform:"uppercase", color:C.onVariant }}>{n.cat} · {n.src}</div>
+                        <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, lineHeight:1.25, color:T.text, marginBottom:2 }}>{n.title}</div>
+                        <div style={meta}>{n.cat} · {n.src}</div>
                       </div>
-                      <button onClick={e=>{e.stopPropagation();toggleBkm(n.id);}} style={{ background:"none", border:"none", color:C.onVariant, cursor:"pointer", fontSize:13, padding:4, flexShrink:0 }}>✕</button>
+                      <button onClick={e=>{e.stopPropagation();toggleBkm(n.id);}} style={{ background:"none", border:"none", color:T.faint, cursor:"pointer", fontSize:13, padding:4, flexShrink:0 }}>✕</button>
                     </div>
-                  ))
+                  ))}</div>
                 }
               </div>
             </div>
@@ -562,63 +463,63 @@ export default function NeonLuminary() {
           {/* ── SETTINGS ── */}
           {tab === "settings" && (
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <div style={{ padding:"16px 14px 12px", flexShrink:0 }}>
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:22, fontWeight:700, letterSpacing:"-.5px", color:C.onSurface }}>Profile</div>
+              <div style={{ ...pad, paddingTop:24, paddingBottom:12, flexShrink:0 }}>
+                <div style={headline(28)}>Profile</div>
               </div>
-              <div style={{ flex:1, overflowY:"auto", paddingBottom:16 }}>
+              <div style={{ flex:1, overflowY:"auto", ...pad }}>
                 {/* About */}
-                <div style={{ margin:"0 14px 16px", padding:"16px 18px", background:C.surfaceCtr, borderRadius:16, border:`1px solid ${C.outlineFaint}` }}>
-                  <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:700, color:C.primary, marginBottom:6 }}>◈ Neon Luminary</div>
-                  <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, color:C.onVariant, lineHeight:1.6 }}>
-                    Curated daily AI briefing — updated every 24 hours. No tracking, no ads, no API keys.
-                  </div>
-                  {updatedAt && <div style={{ marginTop:10, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, color:C.onVariant, textTransform:"uppercase" }}>Last updated: {fmtDate(updatedAt)}</div>}
+                <div style={{ padding:"16px 0", ...rule, marginBottom:16 }}>
+                  <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, color:T.text, marginBottom:4 }}>Neon Luminary</div>
+                  <div style={{ fontFamily:F.body, fontSize:13, color:T.muted, lineHeight:1.6 }}>Curated daily AI briefing. No tracking, no ads.</div>
+                  {updatedAt && <div style={{ ...meta, marginTop:8 }}>Last updated: {fmtDate(updatedAt)}</div>}
                 </div>
 
-                {[
-                  { label:"Summary Length", sub:"S = 100 · M = 150 · L = 200 words", ctrl:<div style={{ display:"flex", background:C.surfaceTop, borderRadius:10, padding:3, gap:2 }}>
-                    {["S","M","L"].map(s=><button key={s} onClick={()=>setSumLen(s)} style={{ padding:"6px 12px", borderRadius:8, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", cursor:"pointer", background:sumLen===s?C.primary:"transparent", color:sumLen===s?"#000e3a":C.onVariant, border:"none", transition:"all .18s" }}>{s}</button>)}
-                  </div> },
-                  { label:"Reading Mode", sub:"ELI5 · Technical · Business", ctrl:<div style={{ display:"flex", background:C.surfaceTop, borderRadius:10, padding:3, gap:2 }}>
-                    {[["ELI5","ELI5"],["Tech","Technical"],["Biz","Business"]].map(([l,v])=><button key={l} onClick={()=>setAiMode(v)} style={{ padding:"6px 12px", borderRadius:8, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", cursor:"pointer", background:aiMode===v?C.primary:"transparent", color:aiMode===v?"#000e3a":C.onVariant, border:"none", transition:"all .18s" }}>{l}</button>)}
-                  </div> },
-                ].map(({label,sub,ctrl}) => (
-                  <div key={label}>
-                    <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant, padding:"12px 18px 8px" }}>{label}</div>
-                    <div style={{ background:C.surfaceCtr, borderRadius:16, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 4px", padding:"15px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:14 }}>
-                      <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:500, letterSpacing:.5, color:C.onVariant }}>{sub}</div>
-                      {ctrl}
-                    </div>
-                  </div>
-                ))}
-
-                <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.onVariant, padding:"18px 18px 8px" }}>My Interests</div>
-                <div style={{ background:C.surfaceCtr, borderRadius:16, border:`1px solid ${C.outlineFaint}`, margin:"0 14px 4px", padding:"16px 18px" }}>
-                  <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-                    {CATS.map(c => (
-                      <button key={c} onClick={()=>setInterests(p=>p.includes(c)?p.filter(x=>x!==c):[...p,c])}
-                        style={{ padding:"6px 14px", borderRadius:100, border:`1px solid ${interests.includes(c)?"rgba(151,169,255,0.4)":C.outlineFaint}`, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:700, letterSpacing:.8, textTransform:"uppercase", background: interests.includes(c)?"rgba(151,169,255,0.15)":C.surfaceHigh, color: interests.includes(c)?C.primary:C.onVariant, cursor:"pointer", transition:"all .18s" }}>{c}</button>
-                    ))}
-                  </div>
-                  <div style={{ marginTop:12, fontFamily:"'Space Grotesk',sans-serif", fontSize:9, fontWeight:600, letterSpacing:.8, color:C.onVariant, textTransform:"uppercase" }}>Selected categories filter your feed</div>
+                {/* Theme */}
+                <div style={{ ...label, marginBottom:8 }}>Appearance</div>
+                <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+                  <PillBtn label="Light" on={!dark} onClick={()=>setDark(false)} />
+                  <PillBtn label="Dark" on={dark} onClick={()=>setDark(true)} />
                 </div>
+
+                {/* Summary length */}
+                <div style={{ ...label, marginBottom:8 }}>Summary Length</div>
+                <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+                  {["S","M","L"].map(s => <PillBtn key={s} label={s==="S"?"Short":s==="M"?"Medium":"Full"} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                </div>
+
+                {/* Reading mode */}
+                <div style={{ ...label, marginBottom:8 }}>Reading Mode</div>
+                <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+                  {[["ELI5","ELI5"],["Technical","Technical"],["Business","Business"]].map(([l,v]) => <PillBtn key={l} label={l} on={aiMode===v} onClick={()=>setAiMode(v)} />)}
+                </div>
+
+                {/* Interests */}
+                <div style={{ ...label, marginBottom:8 }}>My Interests</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:8 }}>
+                  {CATS.map(c => <PillBtn key={c} label={c} on={interests.includes(c)} onClick={()=>setInterests(p=>p.includes(c)?p.filter(x=>x!==c):[...p,c])} />)}
+                </div>
+                <div style={{ ...meta, marginBottom:24 }}>Selected categories filter your feed</div>
               </div>
             </div>
           )}
 
           {/* Toast */}
           {toast && (
-            <div style={S.toast}>
+            <div style={{ position:"fixed", bottom:80, left:"50%", transform:"translateX(-50%)", width:"calc(100% - 48px)", maxWidth:432, background:T.toastBg, border:`1px solid ${T.ruleStrong}`, borderRadius:4, padding:"12px 16px", display:"flex", alignItems:"center", gap:10, zIndex:9999, animation:"toastIn .22s ease both" }}>
               <span style={{ fontSize:14 }}>{toast.icon}</span>
-              <span style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:11, fontWeight:600, color:C.onSurface, letterSpacing:.3 }}>{toast.msg}</span>
+              <span style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text }}>{toast.msg}</span>
             </div>
           )}
         </div>
 
         {/* Bottom nav */}
-        <nav style={S.nav}>
-          {TABS.map((t) => <NavBtn key={t.id} t={t} />)}
-          <div style={{ ...S.navInd, left:`${tabIdx*20+10}%`, transform:"translateX(-50%)" }} />
+        <nav style={{ height:64, display:"flex", alignItems:"center", justifyContent:"space-around", background:T.navBg, backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderTop:`1px solid ${T.ruleStrong}`, flexShrink:0, paddingBottom:4 }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, cursor:"pointer", padding:"6px 14px", background:"none", border:"none" }}>
+              <span style={{ fontSize:18, color: tab===t.id ? T.accent : T.faint, transition:"color .15s" }}>{t.icon}</span>
+              <span style={{ fontFamily:F.mono, fontSize:8, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color: tab===t.id ? T.accent : T.faint, transition:"color .15s" }}>{t.label}</span>
+            </button>
+          ))}
         </nav>
       </div>
     </>
