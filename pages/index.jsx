@@ -156,41 +156,41 @@ export default function NeonLuminary() {
   const toggleRx = (id, type) =>
     setReactions(r => ({ ...r, [id]: r[id]===type ? null : type }));
 
-  const playAudio = (it) => {
-    if (!("speechSynthesis" in window)) { toast$("TTS not supported"); return; }
-    if (audioOn) { window.speechSynthesis.cancel(); setAudioOn(false); return; }
+  const audioRef = useRef(null);
 
-    const synth = window.speechSynthesis;
-    const voices = synth.getVoices();
-    const preferred = voices.find(v => /Google US English|Samantha|Microsoft Aria|Microsoft Jenny/i.test(v.name))
-                   || voices.find(v => v.lang.startsWith("en") && v.localService === false)
-                   || voices.find(v => v.lang.startsWith("en"))
-                   || voices[0];
+  const stopAudio = () => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setAudioOn(false);
+  };
 
-    const parts = [
-      { text: it.title + ".", rate: 0.88, pause: 400 },
-      { text: getSummary(it, aiMode, "L"), rate: 0.92, pause: 500 },
-      { text: "Why it matters. " + it.whyItMatters, rate: 0.88, pause: 0 },
-    ];
-
-    let idx = 0;
-    const speakNext = () => {
-      if (idx >= parts.length) { setAudioOn(false); return; }
-      const p = parts[idx++];
-      const utt = new SpeechSynthesisUtterance(p.text);
-      if (preferred) utt.voice = preferred;
-      utt.rate = p.rate;
-      utt.pitch = 1.05;
-      utt.onend = () => {
-        if (p.pause > 0) setTimeout(speakNext, p.pause);
-        else speakNext();
-      };
-      utt.onerror = () => setAudioOn(false);
-      synth.speak(utt);
-    };
-    speakNext();
+  const playAudio = async (it) => {
+    if (audioOn) { stopAudio(); return; }
     setAudioOn(true);
-    toast$("Playing audio…", "▶");
+    toast$("Generating audio…", "◎");
+
+    try {
+      const resp = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: it.title,
+          summary: getSummary(it, aiMode, "L"),
+          whyItMatters: it.whyItMatters,
+        }),
+      });
+      if (!resp.ok) throw new Error("api");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { stopAudio(); URL.revokeObjectURL(url); };
+      audio.onerror = () => { stopAudio(); URL.revokeObjectURL(url); };
+      audio.play();
+      toast$("Playing briefing…", "▶");
+    } catch {
+      setAudioOn(false);
+      toast$("Audio unavailable", "✕");
+    }
   };
 
   const share = (it) => {
