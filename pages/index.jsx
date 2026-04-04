@@ -28,13 +28,20 @@ const F = {
 };
 
 const CATS = ["LLMs","Tools","Startups","Research","Coding AI","Business"];
-const WL = { S:30, M:60, L:9999 };
+const WL = { S:30, M:60 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
   return w.length <= n ? text : w.slice(0, n).join(" ") + "…";
 };
 const getSummary = (item, mode, len) => {
+  if (len === "L") {
+    /* Detailed briefing — combine all available perspectives */
+    let parts = [item.summary];
+    if (item.eli5) parts.push("In simple terms — " + item.eli5);
+    if (item.business) parts.push("Business impact — " + item.business);
+    return parts.join("\n\n");
+  }
   const lim = WL[len];
   const text = mode === "ELI5" ? (item.eli5 || item.summary)
              : mode === "Business" ? (item.business || item.summary)
@@ -78,6 +85,7 @@ export default function NeonLuminary() {
   const [audioOn, setAudioOn] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [dark, setDark] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   const T = dark ? themes.dark : themes.light;
 
@@ -89,6 +97,13 @@ export default function NeonLuminary() {
     setInterests(load("interests", ["LLMs","Tools","Coding AI"]));
     setDark(load("dark", false));
     setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   useEffect(() => { if (hydrated) save("sumLen", sumLen); }, [sumLen, hydrated]);
@@ -198,7 +213,7 @@ export default function NeonLuminary() {
   const bodyText = { fontFamily:F.body, fontSize:14, color:T.muted, lineHeight:1.65 };
   const meta = { fontFamily:F.mono, fontSize:10, fontWeight:500, color:T.faint, letterSpacing:0.5 };
   const rule = { borderBottom:`1px solid ${T.rule}` };
-  const pad = { padding:"0 24px" };
+  const pad = { padding: isDesktop ? "0 40px" : "0 24px" };
 
   /* ── Btn helpers ── */
   const PillBtn = ({label:l, on, onClick}) => (
@@ -243,11 +258,23 @@ export default function NeonLuminary() {
         <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
       </Head>
 
-      <div style={{ minHeight:"100dvh", background:T.bg, color:T.text, display:"flex", flexDirection:"column", maxWidth:480, margin:"0 auto", position:"relative", transition:"background .3s, color .3s" }}>
+      <div style={{ minHeight:"100dvh", background:T.bg, color:T.text, display:"flex", flexDirection:"column", maxWidth: isDesktop ? 1080 : 480, margin:"0 auto", position:"relative", transition:"background .3s, color .3s" }}>
 
         {/* Header */}
-        <header style={{ position:"sticky", top:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 24px", background:T.navBg, backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:`1px solid ${T.ruleStrong}` }}>
-          <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, color:T.text, letterSpacing:"-0.3px" }}>Neon Luminary</div>
+        <header style={{ position:"sticky", top:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"space-between", padding: isDesktop ? "16px 40px" : "16px 24px", background:T.navBg, backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:`1px solid ${T.ruleStrong}` }}>
+          <div style={{ display:"flex", alignItems:"center", gap: isDesktop ? 32 : 0 }}>
+            <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, color:T.text, letterSpacing:"-0.3px" }}>Neon Luminary</div>
+            {isDesktop && (
+              <nav style={{ display:"flex", gap:4 }}>
+                {TABS.map(t => (
+                  <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:2, background: tab===t.id ? T.accentMuted : "transparent", border:"none", cursor:"pointer", transition:"all .15s" }}>
+                    <span style={{ fontSize:14, color: tab===t.id ? T.accent : T.faint }}>{t.icon}</span>
+                    <span style={{ fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color: tab===t.id ? T.accent : T.faint }}>{t.label}</span>
+                  </button>
+                ))}
+              </nav>
+            )}
+          </div>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             {updatedAt && <span style={meta}>{fmtDate(updatedAt)}</span>}
             <button onClick={()=>setDark(d=>!d)} style={{ background:"none", border:`1px solid ${T.rule}`, borderRadius:2, padding:"4px 10px", fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1, color:T.faint, cursor:"pointer" }}>{dark?"LIGHT":"DARK"}</button>
@@ -260,98 +287,126 @@ export default function NeonLuminary() {
           {/* ── FEED ── */}
           {tab === "feed" && item && (
             <div style={{ position:"absolute", inset:0 }}>
-              <div style={{ position:"absolute", inset:0, overflowY:"auto" }}
+              <div style={{ position:"absolute", inset:0, overflowY:"auto", display: isDesktop ? "flex" : "block" }}
                 onTouchStart={onTS} onTouchEnd={onTE} onMouseDown={onMD} onMouseUp={onMU}>
 
-                <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
-                  <div style={{ ...pad, paddingTop:24 }}>
-                    {/* Category + counter */}
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                      <span style={catLabel}>{item.cat}</span>
-                      <span style={meta}>{page+1} / {displayNews.length}</span>
-                    </div>
-
-                    {/* Headline — extreme scale */}
-                    <h1 style={headline(42)}>{item.title}</h1>
-
-                    {/* Meta row */}
-                    <div style={{ display:"flex", gap:16, alignItems:"center", padding:"16px 0", ...rule, marginBottom:20 }}>
-                      <span style={meta}>{item.src}</span>
-                      <span style={{ width:4, height:4, borderRadius:"50%", background:T.accent }} />
-                      <span style={meta}>{Math.max(1, Math.ceil(getSummary(item,aiMode,sumLen).split(" ").length/200))} min read</span>
-                      <span style={meta}>{(getCnt(item.id,"like")+getCnt(item.id,"fire")).toLocaleString()} reactions</span>
-                    </div>
-
-                    {/* Why It Matters */}
-                    <div style={{ borderLeft:`2px solid ${T.accent}`, background:T.accentMuted, borderRadius:"0 4px 4px 0", padding:"14px 16px", marginBottom:20 }}>
-                      <div style={{ ...catLabel, marginBottom:6 }}>Why It Matters</div>
-                      <div style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text, lineHeight:1.55 }}>{item.whyItMatters}</div>
-                    </div>
-
-                    {/* Controls row */}
-                    <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
-                      {["S","M","L"].map(s => <PillBtn key={s} label={s} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
-                      <span style={{ width:1, height:16, background:T.rule, margin:"0 4px" }} />
-                      {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={m} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
-                    </div>
-
-                    {/* Summary */}
-                    <p style={{ ...bodyText, marginBottom:20 }}>{getSummary(item,aiMode,sumLen)}</p>
-
-                    {/* Tags */}
-                    {item.tags?.length > 0 && (
-                      <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>
-                        {item.tool && <Tag t="Tool" />}
-                        {item.tags.map(t => <Tag key={t} t={t} />)}
+                {/* Main story column */}
+                <div style={{ flex: isDesktop ? 1 : undefined, minWidth:0 }}>
+                  <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
+                    <div style={{ padding: isDesktop ? "32px 48px" : "24px 24px 24px" }}>
+                      {/* Category + counter */}
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+                        <span style={catLabel}>{item.cat}</span>
+                        <span style={meta}>{page+1} / {displayNews.length}</span>
                       </div>
-                    )}
 
-                    {/* Actions */}
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
-                      <RxBtn id={item.id} type="like" emoji="👍" />
-                      <RxBtn id={item.id} type="fire" emoji="🔥" />
-                      <div style={{ flex:1 }} />
-                      <IcoBtn ico={audioOn?"⏹":"▶"} on={audioOn} onClick={()=>playAudio(item)} />
-                      <IcoBtn ico="◇" on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
-                      <IcoBtn ico="↗" on={false} onClick={()=>share(item)} />
-                    </div>
+                      {/* Headline — extreme scale */}
+                      <h1 style={headline(isDesktop ? 48 : 42)}>{item.title}</h1>
 
-                    {/* Source link */}
-                    <a href={item.url} target="_blank" rel="noreferrer"
-                      style={{ fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:T.accent, textDecoration:"none" }}>
-                      Read on {item.src} →
-                    </a>
+                      {/* Meta row */}
+                      <div style={{ display:"flex", gap:16, alignItems:"center", padding:"16px 0", ...rule, marginBottom:20 }}>
+                        <span style={meta}>{item.src}</span>
+                        <span style={{ width:4, height:4, borderRadius:"50%", background:T.accent }} />
+                        <span style={meta}>{Math.max(1, Math.ceil(getSummary(item,aiMode,sumLen).split(" ").length/200))} min read</span>
+                        <span style={meta}>{(getCnt(item.id,"like")+getCnt(item.id,"fire")).toLocaleString()} reactions</span>
+                      </div>
 
-                    {/* Divider */}
-                    <div style={{ height:1, background:T.ruleStrong, margin:"32px 0 24px" }} />
+                      {/* Why It Matters */}
+                      <div style={{ borderLeft:`2px solid ${T.accent}`, background:T.accentMuted, borderRadius:"0 4px 4px 0", padding:"14px 16px", marginBottom:20 }}>
+                        <div style={{ ...catLabel, marginBottom:6 }}>Why It Matters</div>
+                        <div style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text, lineHeight:1.55 }}>{item.whyItMatters}</div>
+                      </div>
 
-                    {/* Related */}
-                    {related.length > 0 && <>
-                      <div style={{ ...label, marginBottom:16 }}>Related</div>
-                      {related.map(r => (
-                        <div key={r.id} onClick={()=>jumpToStory(r.id)}
-                          style={{ padding:"16px 0", ...rule, cursor:"pointer" }}>
-                          <div style={catLabel}>{r.cat}</div>
-                          <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, lineHeight:1.2, color:T.text, marginTop:4 }}>{r.title}</div>
+                      {/* Controls row */}
+                      <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
+                        {["S","M","L"].map(s => <PillBtn key={s} label={s} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                        <span style={{ width:1, height:16, background:T.rule, margin:"0 4px" }} />
+                        {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={m} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                      </div>
+
+                      {/* Summary */}
+                      <div style={{ ...bodyText, marginBottom:20, fontSize: isDesktop ? 15 : 14, maxWidth: isDesktop ? 640 : undefined }}>
+                        {getSummary(item,aiMode,sumLen).split("\n\n").map((p,i) => (
+                          <p key={i} style={{ marginBottom: i < getSummary(item,aiMode,sumLen).split("\n\n").length - 1 ? 14 : 0 }}>{p}</p>
+                        ))}
+                      </div>
+
+                      {/* Tags */}
+                      {item.tags?.length > 0 && (
+                        <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>
+                          {item.tool && <Tag t="Tool" />}
+                          {item.tags.map(t => <Tag key={t} t={t} />)}
                         </div>
-                      ))}
-                    </>}
-                    <div style={{ height:24 }} />
+                      )}
+
+                      {/* Actions */}
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
+                        <RxBtn id={item.id} type="like" emoji="👍" />
+                        <RxBtn id={item.id} type="fire" emoji="🔥" />
+                        <div style={{ flex:1 }} />
+                        <IcoBtn ico={audioOn?"⏹":"▶"} on={audioOn} onClick={()=>playAudio(item)} />
+                        <IcoBtn ico="◇" on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
+                        <IcoBtn ico="↗" on={false} onClick={()=>share(item)} />
+                      </div>
+
+                      {/* Source link */}
+                      <a href={item.url} target="_blank" rel="noreferrer"
+                        style={{ fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color:T.accent, textDecoration:"none" }}>
+                        Read on {item.src} →
+                      </a>
+
+                      {/* Related — only on mobile (desktop has sidebar) */}
+                      {!isDesktop && <>
+                        <div style={{ height:1, background:T.ruleStrong, margin:"32px 0 24px" }} />
+                        {related.length > 0 && <>
+                          <div style={{ ...label, marginBottom:16 }}>Related</div>
+                          {related.map(r => (
+                            <div key={r.id} onClick={()=>jumpToStory(r.id)}
+                              style={{ padding:"16px 0", ...rule, cursor:"pointer" }}>
+                              <div style={catLabel}>{r.cat}</div>
+                              <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, lineHeight:1.2, color:T.text, marginTop:4 }}>{r.title}</div>
+                            </div>
+                          ))}
+                        </>}
+                      </>}
+                      <div style={{ height:24 }} />
+                    </div>
                   </div>
                 </div>
+
+                {/* Desktop sidebar — story list */}
+                {isDesktop && (
+                  <aside style={{ width:300, flexShrink:0, borderLeft:`1px solid ${T.rule}`, overflowY:"auto", padding:"32px 24px" }}>
+                    <div style={{ ...label, marginBottom:16 }}>All Stories</div>
+                    {displayNews.map((n,i) => (
+                      <div key={n.id} onClick={()=>jumpPage(i)}
+                        style={{ padding:"12px 0", ...rule, cursor:"pointer", opacity: i===page ? 1 : 0.7, transition:"opacity .15s" }}>
+                        <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
+                          <span style={{ fontFamily:F.display, fontSize:18, color: i===page ? T.accent : T.faint, minWidth:20, textAlign:"right" }}>{i+1}</span>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontFamily:F.display, fontSize:15, fontWeight:400, lineHeight:1.25, color: i===page ? T.text : T.muted }}>{n.title}</div>
+                            <div style={{ ...meta, marginTop:3 }}>{n.cat} · {n.src}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </aside>
+                )}
               </div>
 
-              {/* Page dots */}
-              <div style={{ position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", gap:5, pointerEvents:"none" }}>
-                {displayNews.map((_,i) => (
-                  <div key={i} onClick={()=>jumpPage(i)}
-                    style={{ height:2, width: i===page ? 24 : 12, borderRadius:1, background: i===page ? T.accent : T.rule, transition:"all .25s", cursor:"pointer", pointerEvents:"all" }} />
-                ))}
-              </div>
+              {/* Page dots — mobile only */}
+              {!isDesktop && (
+                <div style={{ position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", gap:5, pointerEvents:"none" }}>
+                  {displayNews.map((_,i) => (
+                    <div key={i} onClick={()=>jumpPage(i)}
+                      style={{ height:2, width: i===page ? 24 : 12, borderRadius:1, background: i===page ? T.accent : T.rule, transition:"all .25s", cursor:"pointer", pointerEvents:"all" }} />
+                  ))}
+                </div>
+              )}
 
               {/* Arrows */}
-              {page > 0 && <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderLeft:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 4px 4px 0" }}>‹</button>}
-              {page < displayNews.length-1 && <button onClick={()=>goPage(1)} style={{ position:"absolute", top:"50%", right:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderRight:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"4px 0 0 4px" }}>›</button>}
+              {!isDesktop && page > 0 && <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderLeft:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 4px 4px 0" }}>‹</button>}
+              {!isDesktop && page < displayNews.length-1 && <button onClick={()=>goPage(1)} style={{ position:"absolute", top:"50%", right:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderRight:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"4px 0 0 4px" }}>›</button>}
             </div>
           )}
 
@@ -365,10 +420,10 @@ export default function NeonLuminary() {
               <div style={{ flex:1, overflowY:"auto" }}>
                 {toolList.length > 0 && <>
                   <div style={{ ...label, ...pad, marginBottom:12 }}>Hot Tools</div>
-                  <div style={{ display:"flex", gap:12, overflowX:"auto", padding:"0 24px 20px" }}>
+                  <div style={{ display: isDesktop ? "grid" : "flex", gridTemplateColumns: isDesktop ? "repeat(auto-fill, minmax(160px, 1fr))" : undefined, gap:12, overflowX: isDesktop ? "visible" : "auto", padding: isDesktop ? "0 40px 20px" : "0 24px 20px" }}>
                     {toolList.map(t => (
                       <div key={t.id} onClick={()=>jumpToStory(t.id)}
-                        style={{ flexShrink:0, width:120, padding:16, border:`1px solid ${T.rule}`, borderRadius:4, cursor:"pointer" }}>
+                        style={{ flexShrink:0, width: isDesktop ? "auto" : 120, padding:16, border:`1px solid ${T.rule}`, borderRadius:4, cursor:"pointer" }}>
                         <span style={{ fontSize:28, display:"block", marginBottom:8 }}>{t.e}</span>
                         <div style={{ fontFamily:F.display, fontSize:14, fontWeight:400, lineHeight:1.25, color:T.text, marginBottom:4 }}>{t.title.split(" ").slice(0,4).join(" ")}…</div>
                         <div style={meta}>{t.src}</div>
@@ -415,7 +470,7 @@ export default function NeonLuminary() {
                       <span style={{ fontFamily:F.display, fontSize:44, color:T.faint, opacity:.4 }}>○</span>
                       <span style={{ fontFamily:F.body, fontSize:14, fontWeight:500, color:T.muted }}>No stories match</span>
                     </div>
-                  : <div style={pad}>{searchResults.map(n => (
+                  : <div style={{ ...pad, display: isDesktop ? "grid" : "block", gridTemplateColumns: isDesktop ? "1fr 1fr" : undefined, gap: isDesktop ? "0 32px" : undefined }}>{searchResults.map(n => (
                     <div key={n.id} onClick={()=>jumpToStory(n.id)}
                       style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 0", ...rule, cursor:"pointer" }}>
                       <span style={{ fontSize:22, flexShrink:0 }}>{n.e}</span>
@@ -467,33 +522,39 @@ export default function NeonLuminary() {
                 <div style={headline(28)}>Profile</div>
               </div>
               <div style={{ flex:1, overflowY:"auto", ...pad }}>
-                {/* About */}
-                <div style={{ padding:"16px 0", ...rule, marginBottom:16 }}>
-                  <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, color:T.text, marginBottom:4 }}>Neon Luminary</div>
-                  <div style={{ fontFamily:F.body, fontSize:13, color:T.muted, lineHeight:1.6 }}>Curated daily AI briefing. No tracking, no ads.</div>
-                  {updatedAt && <div style={{ ...meta, marginTop:8 }}>Last updated: {fmtDate(updatedAt)}</div>}
+                <div style={{ display: isDesktop ? "grid" : "block", gridTemplateColumns: isDesktop ? "1fr 1fr" : undefined, gap: isDesktop ? "0 48px" : undefined, maxWidth: isDesktop ? 640 : undefined }}>
+                  <div>
+                    {/* About */}
+                    <div style={{ padding:"16px 0", ...rule, marginBottom:16 }}>
+                      <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, color:T.text, marginBottom:4 }}>Neon Luminary</div>
+                      <div style={{ fontFamily:F.body, fontSize:13, color:T.muted, lineHeight:1.6 }}>Curated daily AI briefing. No tracking, no ads.</div>
+                      {updatedAt && <div style={{ ...meta, marginTop:8 }}>Last updated: {fmtDate(updatedAt)}</div>}
+                    </div>
+
+                    {/* Theme */}
+                    <div style={{ ...label, marginBottom:8 }}>Appearance</div>
+                    <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+                      <PillBtn label="Light" on={!dark} onClick={()=>setDark(false)} />
+                      <PillBtn label="Dark" on={dark} onClick={()=>setDark(true)} />
+                    </div>
+                  </div>
+
+                  <div>
+                    {/* Summary length */}
+                    <div style={{ ...label, marginBottom:8 }}>Summary Length</div>
+                    <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+                      {["S","M","L"].map(s => <PillBtn key={s} label={s==="S"?"Short":s==="M"?"Medium":"Full"} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                    </div>
+
+                    {/* Reading mode */}
+                    <div style={{ ...label, marginBottom:8 }}>Reading Mode</div>
+                    <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+                      {[["ELI5","ELI5"],["Technical","Technical"],["Business","Business"]].map(([l,v]) => <PillBtn key={l} label={l} on={aiMode===v} onClick={()=>setAiMode(v)} />)}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Theme */}
-                <div style={{ ...label, marginBottom:8 }}>Appearance</div>
-                <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                  <PillBtn label="Light" on={!dark} onClick={()=>setDark(false)} />
-                  <PillBtn label="Dark" on={dark} onClick={()=>setDark(true)} />
-                </div>
-
-                {/* Summary length */}
-                <div style={{ ...label, marginBottom:8 }}>Summary Length</div>
-                <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                  {["S","M","L"].map(s => <PillBtn key={s} label={s==="S"?"Short":s==="M"?"Medium":"Full"} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
-                </div>
-
-                {/* Reading mode */}
-                <div style={{ ...label, marginBottom:8 }}>Reading Mode</div>
-                <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                  {[["ELI5","ELI5"],["Technical","Technical"],["Business","Business"]].map(([l,v]) => <PillBtn key={l} label={l} on={aiMode===v} onClick={()=>setAiMode(v)} />)}
-                </div>
-
-                {/* Interests */}
+                {/* Interests — full width */}
                 <div style={{ ...label, marginBottom:8 }}>My Interests</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:8 }}>
                   {CATS.map(c => <PillBtn key={c} label={c} on={interests.includes(c)} onClick={()=>setInterests(p=>p.includes(c)?p.filter(x=>x!==c):[...p,c])} />)}
@@ -512,8 +573,8 @@ export default function NeonLuminary() {
           )}
         </div>
 
-        {/* Bottom nav */}
-        <nav style={{ height:64, display:"flex", alignItems:"center", justifyContent:"space-around", background:T.navBg, backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderTop:`1px solid ${T.ruleStrong}`, flexShrink:0, paddingBottom:4 }}>
+        {/* Bottom nav — mobile only */}
+        <nav style={{ height:64, display: isDesktop ? "none" : "flex", alignItems:"center", justifyContent:"space-around", background:T.navBg, backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderTop:`1px solid ${T.ruleStrong}`, flexShrink:0, paddingBottom:4 }}>
           {TABS.map(t => (
             <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, cursor:"pointer", padding:"6px 14px", background:"none", border:"none" }}>
               <span style={{ fontSize:18, color: tab===t.id ? T.accent : T.faint, transition:"color .15s" }}>{t.icon}</span>
