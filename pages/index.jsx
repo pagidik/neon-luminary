@@ -112,6 +112,7 @@ export default function NeonLuminary() {
   useEffect(() => { if (hydrated) save("reactions", reactions); }, [reactions, hydrated]);
   useEffect(() => { if (hydrated) save("interests", interests); }, [interests, hydrated]);
   useEffect(() => { if (hydrated) save("dark", dark); }, [dark, hydrated]);
+  useEffect(() => { document.documentElement.style.background = T.bg; document.body.style.background = T.bg; }, [T.bg]);
 
   useEffect(() => {
     fetch("/news-data.json")
