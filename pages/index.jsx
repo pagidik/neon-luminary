@@ -21,7 +21,7 @@ const C = {
 };
 
 const CATS = ["LLMs","Tools","Startups","Research","Coding AI","Business"];
-const WL   = { S:100, M:150, L:200 };
+const WL   = { S:30, M:60, L:9999 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
@@ -29,9 +29,10 @@ const trunc = (text, n) => {
 };
 const getSummary = (item, mode, len) => {
   const lim = WL[len];
-  if (mode === "ELI5")     return trunc("In plain terms: " + item.summary, lim);
-  if (mode === "Business") return trunc("Bottom line: " + item.summary, lim);
-  return trunc(item.summary, lim);
+  const text = mode === "ELI5" ? (item.eli5 || item.summary)
+             : mode === "Business" ? (item.business || item.summary)
+             : item.summary;
+  return trunc(text, lim);
 };
 const catColor = (cat) => ({
   LLMs: C.primary, Tools: C.tertiary, Startups: "#ff9070",
@@ -158,12 +159,36 @@ export default function NeonLuminary() {
   const playAudio = (it) => {
     if (!("speechSynthesis" in window)) { toast$("TTS not supported"); return; }
     if (audioOn) { window.speechSynthesis.cancel(); setAudioOn(false); return; }
-    const utt = new SpeechSynthesisUtterance(
-      `${it.title}. ${getSummary(it,aiMode,sumLen)} ${it.whyItMatters}`
-    );
-    utt.rate = 0.9;
-    utt.onend = () => setAudioOn(false);
-    window.speechSynthesis.speak(utt);
+
+    const synth = window.speechSynthesis;
+    const voices = synth.getVoices();
+    const preferred = voices.find(v => /Google US English|Samantha|Microsoft Aria|Microsoft Jenny/i.test(v.name))
+                   || voices.find(v => v.lang.startsWith("en") && v.localService === false)
+                   || voices.find(v => v.lang.startsWith("en"))
+                   || voices[0];
+
+    const parts = [
+      { text: it.title + ".", rate: 0.88, pause: 400 },
+      { text: getSummary(it, aiMode, "L"), rate: 0.92, pause: 500 },
+      { text: "Why it matters. " + it.whyItMatters, rate: 0.88, pause: 0 },
+    ];
+
+    let idx = 0;
+    const speakNext = () => {
+      if (idx >= parts.length) { setAudioOn(false); return; }
+      const p = parts[idx++];
+      const utt = new SpeechSynthesisUtterance(p.text);
+      if (preferred) utt.voice = preferred;
+      utt.rate = p.rate;
+      utt.pitch = 1.05;
+      utt.onend = () => {
+        if (p.pause > 0) setTimeout(speakNext, p.pause);
+        else speakNext();
+      };
+      utt.onerror = () => setAudioOn(false);
+      synth.speak(utt);
+    };
+    speakNext();
     setAudioOn(true);
     toast$("Playing audio…", "▶");
   };
