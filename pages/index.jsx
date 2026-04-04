@@ -45,6 +45,16 @@ const fmtDate = (iso) => {
   return d.toLocaleDateString([], { month:"short", day:"numeric" }) + " · " + d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
 };
 
+/* ── Persistence helpers ────────────────────────────────────── */
+const load = (key, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  try { const v = localStorage.getItem("nl_" + key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+};
+const save = (key, val) => {
+  try { localStorage.setItem("nl_" + key, JSON.stringify(val)); } catch {}
+};
+
 /* ── Main App ──────────────────────────────────────────────── */
 export default function NeonLuminary() {
   const [news,       setNews]      = useState([]);
@@ -63,6 +73,24 @@ export default function NeonLuminary() {
   const [slideDir,   setSlideDir]  = useState("r");
   const [slideKey,   setSlideKey]  = useState(0);
   const [audioOn,    setAudioOn]   = useState(false);
+  const [hydrated,   setHydrated]  = useState(false);
+
+  /* Restore persisted state on mount */
+  useEffect(() => {
+    setSumLen(load("sumLen", "M"));
+    setAiMode(load("aiMode", "Technical"));
+    setBookmarks(load("bookmarks", []));
+    setReactions(load("reactions", {}));
+    setInterests(load("interests", ["LLMs","Tools","Coding AI"]));
+    setHydrated(true);
+  }, []);
+
+  /* Persist on change (skip initial hydration) */
+  useEffect(() => { if (hydrated) save("sumLen", sumLen); }, [sumLen, hydrated]);
+  useEffect(() => { if (hydrated) save("aiMode", aiMode); }, [aiMode, hydrated]);
+  useEffect(() => { if (hydrated) save("bookmarks", bookmarks); }, [bookmarks, hydrated]);
+  useEffect(() => { if (hydrated) save("reactions", reactions); }, [reactions, hydrated]);
+  useEffect(() => { if (hydrated) save("interests", interests); }, [interests, hydrated]);
 
   /* Load static JSON on mount */
   useEffect(() => {
