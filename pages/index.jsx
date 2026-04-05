@@ -200,15 +200,29 @@ export default function NeonLuminary() {
   };
 
   const TABS = [
-    { id:"feed", icon:"⌂", label:"Home" },
-    { id:"hot", icon:"△", label:"Trends" },
-    { id:"search", icon:"⌕", label:"Search" },
-    { id:"saved", icon:"★", label:"Saved" },
-    { id:"settings", icon:"☰", label:"Profile" },
+    { id:"feed", label:"Home" },
+    { id:"hot", label:"Trends" },
+    { id:"search", label:"Search" },
+    { id:"saved", label:"Saved" },
+    { id:"settings", label:"Profile" },
   ];
+
+  const NAV_ICONS = {
+    feed: [["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z","M9 22V12h6v10"]],
+    hot: [["M23 6l-9.5 9.5-5-5L1 18","M17 6h6v6"]],
+    search: [["M21 21l-5.2-5.2","M10 17a7 7 0 110-14 7 7 0 010 14z"]],
+    saved: [["M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"]],
+    settings: [["M12 11a4 4 0 100-8 4 4 0 000 8z","M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"]],
+  };
+  const NavIcon = ({id, color, size=20}) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      {(NAV_ICONS[id]?.[0] || []).map((d,i) => <path key={i} d={d} />)}
+    </svg>
+  );
 
   const MODE_LABELS = { ELI5:"Simple", Technical:"Expert", Business:"Executive" };
   const LEN_LABELS = { S:"Skim", M:"Read", L:"Deep Dive" };
+  const readMode = sumLen === "L";
 
   /* ── Shared styles ── */
   const label = { fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:2.5, textTransform:"uppercase", color:T.faint };
@@ -272,7 +286,7 @@ export default function NeonLuminary() {
               <nav style={{ display:"flex", gap:4 }}>
                 {TABS.map(t => (
                   <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:2, background: tab===t.id ? T.accentMuted : "transparent", border:"none", cursor:"pointer", transition:"all .15s" }}>
-                    <span style={{ fontSize:14, color: tab===t.id ? T.accent : T.faint }}>{t.icon}</span>
+                    <NavIcon id={t.id} color={tab===t.id ? T.accent : T.faint} size={16} />
                     <span style={{ fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color: tab===t.id ? T.accent : T.faint }}>{t.label}</span>
                   </button>
                 ))}
@@ -299,8 +313,13 @@ export default function NeonLuminary() {
                   <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
                     <div style={{ padding: isDesktop ? "32px 48px" : "24px 24px 24px" }}>
                       {/* Featured hero */}
-                      <div style={{ background:`linear-gradient(135deg, ${T.bgEl}, ${T.bgHi})`, borderRadius:4, padding: isDesktop ? "48px 0" : "36px 0", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20, borderBottom:`2px solid ${T.accent}` }}>
-                        <span style={{ fontSize: isDesktop ? 72 : 56, lineHeight:1 }}>{item.e}</span>
+                      <div style={{ borderRadius:4, overflow:"hidden", marginBottom:20, borderBottom:`2px solid ${T.accent}`, position:"relative", background:`linear-gradient(135deg, ${T.bgEl}, ${T.bgHi})` }}>
+                        {item.img
+                          ? <img src={item.img} alt="" style={{ width:"100%", height: isDesktop ? 320 : 200, objectFit:"cover", display:"block" }} />
+                          : <div style={{ padding: isDesktop ? "48px 0" : "36px 0", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                              <span style={{ fontSize: isDesktop ? 72 : 56, lineHeight:1 }}>{item.e}</span>
+                            </div>
+                        }
                       </div>
 
                       {/* Category + counter */}
@@ -333,10 +352,21 @@ export default function NeonLuminary() {
                         {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                       </div>
 
-                      {/* Summary */}
-                      <div style={{ ...bodyText, marginBottom:20, fontSize: isDesktop ? 15 : 14, maxWidth: isDesktop ? 640 : undefined }}>
+                      {/* Summary — reading mode on Deep Dive */}
+                      <div style={{
+                        ...bodyText, marginBottom:20, maxWidth: isDesktop ? 640 : undefined, transition:"all .3s ease",
+                        ...(readMode ? {
+                          background: dark ? "#0d0c0a" : "#eae5d9",
+                          padding:"24px 20px", borderRadius:4, border:`1px solid ${T.rule}`,
+                          fontSize: isDesktop ? 17 : 16, lineHeight:1.85, color:T.text,
+                          fontFamily:F.display,
+                        } : {
+                          fontSize: isDesktop ? 15 : 14,
+                        }),
+                      }}>
+                        {readMode && <div style={{ ...label, color:T.accent, marginBottom:12, fontSize:8, letterSpacing:3 }}>READING MODE</div>}
                         {getSummary(item,aiMode,sumLen).split("\n\n").map((p,i) => (
-                          <p key={i} style={{ marginBottom: i < getSummary(item,aiMode,sumLen).split("\n\n").length - 1 ? 14 : 0 }}>{p}</p>
+                          <p key={i} style={{ marginBottom: i < getSummary(item,aiMode,sumLen).split("\n\n").length - 1 ? (readMode ? 20 : 14) : 0 }}>{p}</p>
                         ))}
                       </div>
 
@@ -586,7 +616,7 @@ export default function NeonLuminary() {
         <nav style={{ height:64, display: isDesktop ? "none" : "flex", alignItems:"center", justifyContent:"space-around", background:T.navBg, backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderTop:`1px solid ${T.ruleStrong}`, flexShrink:0, paddingBottom:4 }}>
           {TABS.map(t => (
             <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, cursor:"pointer", padding:"6px 14px", background:"none", border:"none" }}>
-              <span style={{ fontSize:18, color: tab===t.id ? T.accent : T.faint, transition:"color .15s" }}>{t.icon}</span>
+              <NavIcon id={t.id} color={tab===t.id ? T.accent : T.faint} size={20} />
               <span style={{ fontFamily:F.mono, fontSize:8, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color: tab===t.id ? T.accent : T.faint, transition:"color .15s" }}>{t.label}</span>
             </button>
           ))}

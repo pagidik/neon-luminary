@@ -4,6 +4,7 @@
     {
       "id": 1,
       "e": "🖥️",
+      "img": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop&q=80",
       "title": "Cursor 3 Rebuilds IDE Around AI Agents",
       "summary": "Cursor launched version 3 on April 2, completely rebuilding its interface around the premise that AI agents will write most future code. The new Agents Window lets multiple AI agents work in parallel across files, with humans reviewing rather than writing. It is a fundamental rethink of the developer workflow — not an incremental update. Engineers report 3–5x throughput gains on greenfield projects.",
       "eli5": "Cursor made a new version of their code editor where AI helpers do most of the typing for you. You just tell them what to build, and they write the code while you check their work. People say they get way more done this way.",
@@ -18,6 +19,7 @@
     {
       "id": 2,
       "e": "🔮",
+      "img": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&h=400&fit=crop&q=80",
       "title": "Google Gemma 4 Ships — Most Capable Open Models Yet",
       "summary": "Google released Gemma 4, a new family of open-weight models under Apache 2.0, positioning them as the strongest open-source models available. The family spans from on-device sizes to data-center scale, covering NVIDIA Blackwell GPUs, AMD ROCm, and Google TPUs. Alongside Google's Gemma, PrismML's 1-bit Bonsai, H Company's Holo3, and Arcee's Trinity all shipped this week under Apache 2.0 — together covering every device tier from phones to clusters.",
       "eli5": "Google released free AI models called Gemma 4 that anyone can use and modify. They come in different sizes — small enough for your phone or big enough for giant computers. Other companies also released their own free models this week, so there are tons of good free options now.",
@@ -32,6 +34,7 @@
     {
       "id": 3,
       "e": "📉",
+      "img": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop&q=80",
       "title": "Anthropic Ends Claude Access on Third-Party Tools",
       "summary": "Anthropic announced that Claude subscriptions will no longer cover usage on third-party tools starting April 4 at 12pm PT, citing capacity management. Products like OpenClaw, Cursor, and others that relied on users' Claude subscriptions must now integrate direct API billing. The move signals Anthropic is tightening its API funnel as demand outpaces infrastructure. Third-party developers now face a choice: absorb API costs or pass them to users.",
       "eli5": "If you pay for Claude and use it through other apps like Cursor, that will stop working. Anthropic says too many people are using it and they can not keep up. Now those other apps have to pay Anthropic directly, which means they might charge you more.",
@@ -46,6 +49,7 @@
     {
       "id": 4,
       "e": "🧬",
+      "img": "https://images.unsplash.com/photo-1532187863486-abf4dbce1b86?w=800&h=400&fit=crop&q=80",
       "title": "Anthropic Acquires Coefficient Bio for ~$400M",
       "summary": "Anthropic paid approximately $400 million to acquire Coefficient Bio, a startup developing AI models specifically for biological research. The deal signals Anthropic's push beyond general-purpose AI into scientific computing, potentially applying Claude's reasoning capabilities to drug discovery, protein interaction modeling, and biomedical literature synthesis. It is Anthropic's largest acquisition to date.",
       "eli5": "Anthropic bought a company that uses AI to study biology, paying about $400 million. They want Claude to help scientists discover new medicines and understand how the human body works. It is the biggest purchase Anthropic has ever made.",
@@ -60,6 +64,7 @@
     {
       "id": 5,
       "e": "🚀",
+      "img": "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&h=400&fit=crop&q=80",
       "title": "OpenAI Acquires Tech Talk Show TBPN",
       "summary": "OpenAI paid low hundreds of millions to acquire TBPN, a prominent technology media property. The acquisition is widely read as a distribution play — giving OpenAI a direct media voice as it navigates an upcoming IPO and intensifying regulatory scrutiny. TBPN's audience of builders and investors gives OpenAI unprecedented reach into the developer and venture community without relying on traditional press coverage.",
       "eli5": "OpenAI bought a popular tech talk show so they can tell their own story instead of relying on news reporters. They are about to go public on the stock market and want to control how people see them. It is like buying your own TV channel.",
@@ -74,6 +79,7 @@
     {
       "id": 6,
       "e": "📈",
+      "img": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop&q=80",
       "title": "Anthropic and OpenAI Both Signal IPO Plans",
       "summary": "Both Anthropic and OpenAI are actively pursuing public listings, according to reporting from Axios. The dual IPO track reflects growing confidence that AI revenue models have matured enough to satisfy public market scrutiny. Anthropic's revenue has accelerated with Claude's enterprise adoption, while OpenAI's ChatGPT consumer base and API business give it a broader story. Both face the challenge of justifying trillion-dollar valuations amid rising compute costs.",
       "eli5": "Both Anthropic and OpenAI want to sell shares on the stock market soon. They think they are making enough money now to convince investors. But both companies spend a ton on computers to run their AI, and investors will want to see how they plan to keep making more money than they spend.",
@@ -88,6 +94,7 @@
     {
       "id": 7,
       "e": "👨‍💻",
+      "img": "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&h=400&fit=crop&q=80",
       "title": "Zuckerberg Writes Code Again After 20-Year Hiatus",
       "summary": "Mark Zuckerberg has returned to writing code for the first time in roughly two decades, submitting three diffs to Meta's internal monorepo. Sources describe him as a heavy user of Claude Code CLI, using it to prototype AI experiments directly. The move is partly symbolic — signaling Meta's all-in AI posture — but also practical, as Zuckerberg aims to stay technically grounded as Meta's AI products become central to its business.",
       "eli5": "Mark Zuckerberg started writing code again after not doing it for 20 years. He is using an AI tool called Claude Code to help him. It shows that AI coding tools are so good now that even someone who has not coded in forever can jump back in and build things.",
@@ -102,6 +109,7 @@
     {
       "id": 8,
       "e": "❤️",
+      "img": "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&h=400&fit=crop&q=80",
       "title": "AI Detects Heart Failure From 5-Second Voice Clip",
       "summary": "Noah Labs received FDA Breakthrough Device designation for Vox, an AI system capable of detecting heart failure from just a five-second voice recording. The model analyzes acoustic biomarkers in speech — subtle changes in pitch, breathiness, and rhythm caused by fluid buildup around the heart. Clinical trials showed 87% sensitivity in detecting early-stage heart failure before patients reported symptoms.",
       "eli5": "A company made an AI that can tell if your heart is failing just by listening to your voice for 5 seconds. It picks up tiny changes in how you talk that happen when your heart is not working right. The FDA said it is a breakthrough, and it caught problems before people even felt sick.",
@@ -116,6 +124,7 @@
     {
       "id": 9,
       "e": "🕷️",
+      "img": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=400&fit=crop&q=80",
       "title": "MolmoWeb Beats OpenAI's CUA on 3 of 4 Benchmarks",
       "summary": "MolmoWeb, an open-source web agent from the Allen Institute for AI, now outperforms OpenAI's Computer Use Agent on three of four standard benchmarks including WebVoyager and Online-Mind2Web. With 4 parallel attempts, MolmoWeb beats the best single-attempt score from CUA. The model is open-weight, free to deploy, and signals that web automation capabilities are no longer a closed-lab exclusive.",
       "eli5": "A free AI tool called MolmoWeb can browse the web and do tasks for you, and it just beat OpenAI's version on most tests. It is open-source so anyone can use it. This means you do not need to pay a big company for an AI that can use websites on your behalf.",
@@ -130,6 +139,7 @@
     {
       "id": 10,
       "e": "🔧",
+      "img": "https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=800&h=400&fit=crop&q=80",
       "title": "Claude Code Adds Named Subagents, PowerShell & Windows Fixes",
       "summary": "Anthropic shipped a substantial Claude Code update with named subagent support via @ mentions, flicker-free alt-screen rendering, and broader permission controls. Critically, Windows and PowerShell support received major stability fixes — long-session crashes, scrollback glitches, and voice issues are resolved. The update cements Claude Code as a first-class cross-platform coding agent rather than a macOS-first tool.",
       "eli5": "Claude Code got a big update that makes it work much better on Windows. It also lets you call on different AI helpers by name, like asking a specific teammate for help. Before this update, it would crash a lot on Windows — now it works smoothly.",
