@@ -200,12 +200,15 @@ export default function NeonLuminary() {
   };
 
   const TABS = [
-    { id:"feed", icon:"◈", label:"Home" },
-    { id:"hot", icon:"↑", label:"Trends" },
-    { id:"search", icon:"○", label:"Search" },
-    { id:"saved", icon:"◇", label:"Saved" },
-    { id:"settings", icon:"◉", label:"Profile" },
+    { id:"feed", icon:"⌂", label:"Home" },
+    { id:"hot", icon:"△", label:"Trends" },
+    { id:"search", icon:"⌕", label:"Search" },
+    { id:"saved", icon:"★", label:"Saved" },
+    { id:"settings", icon:"☰", label:"Profile" },
   ];
+
+  const MODE_LABELS = { ELI5:"Simple", Technical:"Expert", Business:"Executive" };
+  const LEN_LABELS = { S:"Skim", M:"Read", L:"Deep Dive" };
 
   /* ── Shared styles ── */
   const label = { fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:2.5, textTransform:"uppercase", color:T.faint };
@@ -247,12 +250,12 @@ export default function NeonLuminary() {
   return (
     <>
       <Head>
-        <title>Neon Luminary | AI Briefing</title>
-        <meta name="description" content="Daily curated AI news, tools, and research briefings." />
+        <title>Pulse AI — Real-Time Heartbeat of AI News</title>
+        <meta name="description" content="Pulse AI — curated daily AI news, tools, and research. The real-time heartbeat of AI." />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content={T.bg} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta property="og:title" content="Neon Luminary | AI Briefing" />
+        <meta property="og:title" content="Pulse AI — Real-Time Heartbeat of AI News" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -264,7 +267,7 @@ export default function NeonLuminary() {
         {/* Header */}
         <header style={{ position:"sticky", top:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"space-between", padding: isDesktop ? "16px 40px" : "16px 24px", background:T.navBg, backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderBottom:`1px solid ${T.ruleStrong}` }}>
           <div style={{ display:"flex", alignItems:"center", gap: isDesktop ? 32 : 0 }}>
-            <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, color:T.text, letterSpacing:"-0.3px" }}>Neon Luminary</div>
+            <div style={{ fontFamily:F.display, fontSize:18, fontWeight:400, color:T.text, letterSpacing:"-0.3px" }}>Pulse AI</div>
             {isDesktop && (
               <nav style={{ display:"flex", gap:4 }}>
                 {TABS.map(t => (
@@ -295,6 +298,11 @@ export default function NeonLuminary() {
                 <div style={{ flex: isDesktop ? 1 : undefined, minWidth:0 }}>
                   <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
                     <div style={{ padding: isDesktop ? "32px 48px" : "24px 24px 24px" }}>
+                      {/* Featured hero */}
+                      <div style={{ background:`linear-gradient(135deg, ${T.bgEl}, ${T.bgHi})`, borderRadius:4, padding: isDesktop ? "48px 0" : "36px 0", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20, borderBottom:`2px solid ${T.accent}` }}>
+                        <span style={{ fontSize: isDesktop ? 72 : 56, lineHeight:1 }}>{item.e}</span>
+                      </div>
+
                       {/* Category + counter */}
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
                         <span style={catLabel}>{item.cat}</span>
@@ -312,17 +320,17 @@ export default function NeonLuminary() {
                         <span style={meta}>{(getCnt(item.id,"like")+getCnt(item.id,"fire")).toLocaleString()} reactions</span>
                       </div>
 
-                      {/* Why It Matters */}
+                      {/* Key Takeaway */}
                       <div style={{ borderLeft:`2px solid ${T.accent}`, background:T.accentMuted, borderRadius:"0 4px 4px 0", padding:"14px 16px", marginBottom:20 }}>
-                        <div style={{ ...catLabel, marginBottom:6 }}>Why It Matters</div>
+                        <div style={{ ...catLabel, marginBottom:6 }}>Key Takeaway</div>
                         <div style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text, lineHeight:1.55 }}>{item.whyItMatters}</div>
                       </div>
 
                       {/* Controls row */}
                       <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
-                        {["S","M","L"].map(s => <PillBtn key={s} label={s} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                        {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
                         <span style={{ width:1, height:16, background:T.rule, margin:"0 4px" }} />
-                        {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={m} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                        {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                       </div>
 
                       {/* Summary */}
@@ -346,7 +354,7 @@ export default function NeonLuminary() {
                         <RxBtn id={item.id} type="fire" emoji="🔥" />
                         <div style={{ flex:1 }} />
                         <IcoBtn ico={audioOn?"⏹":"▶"} on={audioOn} onClick={()=>playAudio(item)} />
-                        <IcoBtn ico="◇" on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
+                        <IcoBtn ico="★" on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
                         <IcoBtn ico="↗" on={false} onClick={()=>share(item)} />
                       </div>
 
@@ -497,8 +505,8 @@ export default function NeonLuminary() {
               <div style={{ flex:1, overflowY:"auto" }}>
                 {bookmarks.length === 0
                   ? <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:12, padding:40 }}>
-                      <span style={{ fontFamily:F.display, fontSize:44, color:T.faint, opacity:.4 }}>◇</span>
-                      <span style={{ fontFamily:F.body, fontSize:14, fontWeight:500, color:T.muted, textAlign:"center" }}>Tap ◇ on any story to save it here</span>
+                      <span style={{ fontFamily:F.display, fontSize:44, color:T.faint, opacity:.4 }}>★</span>
+                      <span style={{ fontFamily:F.body, fontSize:14, fontWeight:500, color:T.muted, textAlign:"center" }}>Tap ★ on any story to save it here</span>
                     </div>
                   : <div style={pad}>{news.filter(n=>bookmarks.includes(n.id)).map(n => (
                     <div key={n.id} onClick={()=>jumpToStory(n.id)}
@@ -527,7 +535,7 @@ export default function NeonLuminary() {
                   <div>
                     {/* About */}
                     <div style={{ padding:"16px 0", ...rule, marginBottom:16 }}>
-                      <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, color:T.text, marginBottom:4 }}>Neon Luminary</div>
+                      <div style={{ fontFamily:F.display, fontSize:16, fontWeight:400, color:T.text, marginBottom:4 }}>Pulse AI</div>
                       <div style={{ fontFamily:F.body, fontSize:13, color:T.muted, lineHeight:1.6 }}>Curated daily AI briefing. No tracking, no ads.</div>
                       {updatedAt && <div style={{ ...meta, marginTop:8 }}>Last updated: {fmtDate(updatedAt)}</div>}
                     </div>
@@ -544,13 +552,13 @@ export default function NeonLuminary() {
                     {/* Summary length */}
                     <div style={{ ...label, marginBottom:8 }}>Summary Length</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                      {["S","M","L"].map(s => <PillBtn key={s} label={s==="S"?"Short":s==="M"?"Medium":"Full"} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                      {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
                     </div>
 
                     {/* Reading mode */}
                     <div style={{ ...label, marginBottom:8 }}>Reading Mode</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                      {[["ELI5","ELI5"],["Technical","Technical"],["Business","Business"]].map(([l,v]) => <PillBtn key={l} label={l} on={aiMode===v} onClick={()=>setAiMode(v)} />)}
+                      {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                     </div>
                   </div>
                 </div>

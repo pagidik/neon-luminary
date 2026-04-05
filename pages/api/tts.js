@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const { title, summary, whyItMatters } = req.body;
   if (!title || !summary) return res.status(400).json({ error: "bad_input" });
 
-  const plainScript = `${title}.\n\n${summary}\n\nHere's why it matters. ${whyItMatters}`;
+  const plainScript = `${title}.\n\n${summary}\n\nKey takeaway. ${whyItMatters}`;
 
   /* ── Path 1: ElevenLabs (if API key is set) ── */
   const elevenKey = process.env.ELEVENLABS_API_KEY;
@@ -42,11 +42,11 @@ export default async function handler(req, res) {
   /* ── Path 2: Microsoft Edge TTS (free, neural, no key needed) ── */
   try {
     const tts = new MsEdgeTTS();
-    await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+    await tts.setMetadata("en-US-DavisNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
     const { audioStream } = tts.toStream(plainScript, {
-      rate: "-5%",
-      pitch: "+5Hz",
+      rate: "-8%",
+      pitch: "-2Hz",
       volume: "+0%",
     });
 
