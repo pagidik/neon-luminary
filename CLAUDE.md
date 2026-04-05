@@ -45,6 +45,7 @@ Always read DESIGN.md before making any visual or UI decisions.
 All font choices, colors, spacing, and aesthetic direction are defined there.
 Do not deviate without explicit user approval.
 In QA mode, flag any code that doesn't match DESIGN.md.
+For brand-inspired design references, read `~/.claude/skills/design-reference.md` and load specific brand DESIGN.md files from `~/.claude/design-references/awesome-design-md/design-md/<brand>/DESIGN.md` on demand.
 
 ## Skill routing
 
