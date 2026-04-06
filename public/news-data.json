@@ -1,6 +1,63 @@
 {
-  "updatedAt": "2026-04-06T02:30:00Z",
+  "updatedAt": "2026-04-06T04:02:40Z",
   "stories": [
+    {
+      "id": 16,
+      "e": "🍎",
+      "img": "https://9to5mac.com/wp-content/uploads/sites/6/2024/05/App-Store-fraud.webp",
+      "title": "Apple Cracks Down on Vibe Coding Apps in App Store",
+      "summary": "Apple is escalating enforcement against vibe coding apps that let users build software through natural language prompts. The company pulled the popular app 'Anything' from the App Store and blocked updates for tools like Replit and Vibecode, citing a longstanding rule that apps must be self-contained and cannot execute code that changes functionality. The crackdown comes as vibe coding drove an 84% surge in App Store submissions in a single quarter, overwhelming Apple's review process and pushing approval times from 24-48 hours to 7-30+ days. Critics, including a CNBC column, argue Apple is on the wrong side of history. Enforcement has been inconsistent — Apple approved an update for Indian vibe coding app Emergent the same week it removed Anything.",
+      "skim": "Apple is pulling and blocking vibe coding apps from the App Store, citing self-containment rules, as AI-generated app submissions surged 84%.",
+      "eli5": "Apple is kicking out apps that let you build other apps just by typing what you want in plain English. These 'vibe coding' apps use AI to write the code for you — you just describe what you want and the app creates it. Apple says this breaks their rules because apps are not supposed to change how they work or create new apps inside themselves. The problem is that SO many people are using these tools that the number of new apps sent to Apple's store jumped 84% in just three months. Apple cannot review them all fast enough, so everything is backed up. Some people think Apple is wrong to block these tools because they are the future of how software gets made.",
+      "business": "Apple's crackdown creates regulatory risk for the entire vibe coding ecosystem — a market that includes $6.6B-valued Lovable and a wave of startups. The 84% submission surge signals massive consumer demand, but Apple's gatekeeper position lets it dictate which AI-powered creation tools survive on iOS. This is a platform power play: Apple controls distribution, and vibe-coded apps threaten its quality curation model. For startups building in this space, App Store risk is now existential. Expect regulatory scrutiny — the EU's DMA and ongoing US antitrust cases give regulators ammunition to challenge Apple's enforcement. The inconsistent application of rules (approving Emergent while pulling Anything) suggests this is still an evolving policy, creating uncertainty for developers and investors alike.",
+      "detailed": "Apple has escalated its enforcement against vibe coding applications on the App Store, pulling the popular app 'Anything' and blocking updates for tools including Replit and Vibecode. The company cites section 2.5.2 of its App Review Guidelines, which states that apps should be self-contained and may not execute code that introduces or changes features. Vibe coding apps, which let users build software through natural language prompts powered by AI, inherently violate this principle by generating and running new code dynamically. The crackdown comes amid an unprecedented surge in App Store submissions — the number of new apps submitted rose 84% in a single quarter as vibe coding went mainstream. This flood has overwhelmed Apple's review process, pushing approval times from a historical baseline of 24 to 48 hours to 7 to 30 or more days. A CNBC column argued Apple is on the wrong side of history, noting that these tools represent a fundamental shift in how software gets created. The enforcement has been notably inconsistent: Apple approved an update for Emergent, an Indian vibe coding app with an identical workflow, the same week it removed Anything. Industry observers note the tension between Apple's quality control mandate and the reality that AI-powered code generation is becoming mainstream. The regulatory environment may ultimately force Apple's hand — the EU's Digital Markets Act and ongoing US antitrust proceedings give authorities leverage to challenge platform gatekeeping that blocks legitimate AI development tools.",
+      "whyItMatters": "Apple is trying to gatekeep the vibe coding revolution. With an 84% surge in AI-built apps, the dam may not hold.",
+      "cat": "Business",
+      "src": "9to5Mac",
+      "url": "https://9to5mac.com/2026/03/30/apple-steps-up-crackdown-on-vibe-coding-apps-pulls-anything-from-the-app-store/",
+      "tool": false,
+      "tags": []
+    },
+    {
+      "id": 15,
+      "e": "🤖",
+      "img": "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F64f5fc53-0189-42c3-9a94-4e7464e2f26c_2114x1374.png",
+      "title": "Stripe's AI 'Minions' Ship 1,300 PRs Weekly With Zero Human Code",
+      "summary": "Stripe revealed that its internal AI coding agents, called Minions, now merge over 1,300 pull requests per week containing zero human-written code. Engineers trigger tasks via Slack messages and walk away — the agents spin up isolated cloud environments in under 10 seconds, write code, run tests, and prepare PRs for human review. Each Minion runs on a pre-warmed AWS EC2 'devbox' and connects to Toolshed, Stripe's centralized MCP server exposing nearly 500 internal tools. The system uses a hybrid orchestration of deterministic steps and agentic LLM loops, with a maximum of two CI feedback rounds before escalating to humans. The code these agents produce supports over $1 trillion in annual payment volume.",
+      "skim": "Stripe's AI coding agents 'Minions' autonomously ship 1,300+ pull requests per week, triggered by Slack messages with zero human-written code.",
+      "eli5": "Stripe built robot helpers called Minions that write code all by themselves. An engineer sends a message in Slack saying what needs to be fixed, and the Minion does everything — writes the code, tests it, and sends it for someone to check. They do this over 1,300 times every week without any human writing a single line of code. Each Minion gets its own computer that starts up in less than 10 seconds, loaded with all the tools it needs. It is like having a huge team of junior programmers who never sleep, never take breaks, and can start working instantly. The code they write helps process over a trillion dollars in payments every year, so it has to be really reliable.",
+      "business": "Stripe's Minions represent the most compelling enterprise case study for autonomous coding agents to date. At 1,300 PRs per week with zero human code, this is not a demo — it is production-scale automation supporting $1T+ in annual payment volume. The architecture is replicable: pre-warmed environments, centralized tool access via MCP, and bounded iteration loops. For engineering orgs, the implication is clear: companies that deploy coding agents effectively gain a structural velocity advantage. The 500-tool MCP server is particularly notable — it suggests that the real moat in agentic coding is not the LLM but the internal tooling infrastructure. Companies investing in developer platform engineering are better positioned to capture value from coding agents than those simply buying AI subscriptions.",
+      "detailed": "Stripe has publicly detailed the architecture and impact of Minions, its internal fleet of autonomous coding agents that now merge over 1,300 pull requests per week containing zero human-written code. The system was described in a two-part engineering blog series and subsequent podcast appearances by Stripe engineers. Minions operate as end-to-end coding agents triggered by Slack messages, bug reports, or feature requests. When activated, each Minion spins up on a pre-warmed AWS EC2 instance called a devbox, loaded with Stripe's full source tree, warmed Bazel and type-checking caches, and code generation services. Provisioning takes under 10 seconds from a warm pool. The agents connect to Toolshed, Stripe's centralized internal MCP server, which exposes nearly 500 tools spanning internal systems and third-party platforms. The orchestration uses a hybrid approach: blueprints define sequences of nodes where some run deterministic code and others run agentic LLM loops. Minions are bounded to a maximum of two CI feedback rounds before escalating to human review, preventing runaway iteration. The code managed by Minions supports more than $1 trillion in annual payment volume at Stripe, operating across complex dependencies with financial institutions, regulatory frameworks, and compliance obligations. Engineers note that Minions perform best on well-defined tasks like configuration adjustments, dependency upgrades, and minor refactoring. The key insight from Stripe's engineering team is that success depends primarily on pre-existing developer infrastructure, not the AI model itself.",
+      "whyItMatters": "Stripe proves autonomous coding agents work at scale. 1,300 PRs a week with no human code is the future of software engineering.",
+      "cat": "Coding AI",
+      "src": "ByteByteGo",
+      "url": "https://blog.bytebytego.com/p/how-stripes-minions-ship-1300-prs",
+      "tool": false,
+      "tags": [
+        "API"
+      ]
+    },
+    {
+      "id": 14,
+      "e": "🎤",
+      "img": "https://techcrunch.com/wp-content/uploads/2026/03/260325_TranscribeLaunch_Hero.jpeg",
+      "title": "Cohere Transcribe Tops Open-Source Speech Recognition",
+      "summary": "Cohere released Transcribe, a 2-billion-parameter open-source automatic speech recognition model under the Apache 2.0 license. Despite its compact size, it leads the HuggingFace Open ASR Leaderboard with an average word error rate of just 5.42%, outperforming all open- and closed-source dedicated ASR alternatives including OpenAI's Whisper Large v3, ElevenLabs Scribe v2, and Qwen3-ASR. The model supports 14 languages and is designed to run on consumer-grade GPUs for self-hosting. Cohere is making it available for free through its API and will integrate it into its enterprise agent platform North. Weights are downloadable from Hugging Face.",
+      "skim": "Cohere's new open-source Transcribe model tops all ASR benchmarks with 5.42% word error rate while running on consumer GPUs.",
+      "eli5": "Cohere made a free tool that turns speech into text better than anything else out there. It is called Transcribe and it can understand 14 different languages. What makes it special is that it is small enough to run on a regular computer — you do not need expensive cloud servers. It beats OpenAI's Whisper and other big speech tools even though it is way smaller. It got a score of 5.42% error rate, which means it only makes mistakes on about 5 out of every 100 words. You can download it for free and use it however you want because Cohere gave it an open license. It is great for things like taking notes in meetings, transcribing interviews, or adding subtitles to videos.",
+      "business": "Cohere's Transcribe disrupts the speech-to-text market by delivering state-of-the-art accuracy in a self-hostable, Apache 2.0 licensed package. At 2B parameters running on consumer GPUs, it eliminates the need for cloud ASR APIs from Google, AWS, or OpenAI for many use cases. This directly compresses margins for cloud speech-to-text services. For enterprises with data sovereignty requirements, self-hosted transcription without API calls is a compliance win. The free API tier creates an on-ramp to Cohere's enterprise platform North, making this both a product and a strategic acquisition tool. Microsoft's MAI-Transcribe-1, launched days later, now faces an open-source competitor that leads benchmarks — a pattern we are seeing across modalities as open models close the gap with proprietary offerings.",
+      "detailed": "Cohere has released Transcribe, an open-source automatic speech recognition model that has immediately claimed the top position on the HuggingFace Open ASR Leaderboard. The model achieves an average word error rate of just 5.42%, outperforming all existing open- and closed-source dedicated ASR alternatives, including OpenAI's Whisper Large v3, ElevenLabs Scribe v2, and Alibaba's Qwen3-ASR-1.7B. At 2 billion parameters, Transcribe is notably compact — designed specifically to run on consumer-grade GPUs for organizations that want to self-host their transcription pipeline. The model supports 14 languages: English, French, German, Italian, Spanish, Portuguese, Greek, Dutch, Polish, Chinese, Japanese, Korean, Vietnamese, and Arabic. Cohere released the model under the Apache 2.0 license, making it fully open for commercial use. The weights are available for download on Hugging Face, and Cohere is also offering free API access. The company plans to integrate Transcribe into North, its enterprise agent orchestration platform, and Model Vault, its managed inference service. The release is strategically significant: it arrives just days before Microsoft launched its own MAI-Transcribe-1 model supporting 25 languages. While Microsoft's offering supports more languages, Cohere's model leads on accuracy benchmarks and carries the advantage of being fully open-source and self-hostable. The pattern mirrors what is happening across AI modalities — open-source models are matching or exceeding proprietary alternatives, compressing the pricing power of closed API providers.",
+      "whyItMatters": "The best speech-to-text model is now open-source and runs on your own hardware. Cloud ASR pricing just lost its justification.",
+      "cat": "Tools",
+      "src": "TechCrunch",
+      "url": "https://techcrunch.com/2026/03/26/cohere-launches-an-open-source-voice-model-specifically-for-transcription/",
+      "tool": true,
+      "tags": [
+        "Open-source",
+        "Free",
+        "API"
+      ]
+    },
     {
       "id": 13,
       "e": "🛍️",
@@ -16,12 +73,15 @@
       "src": "CNBC",
       "url": "https://www.cnbc.com/2026/04/05/ai-retail-start-ups-virtual-try-on-tech-margins.html",
       "tool": true,
-      "tags": ["Paid", "API"]
+      "tags": [
+        "Paid",
+        "API"
+      ]
     },
     {
       "id": 12,
       "e": "🧠",
-      "img": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&h=400&fit=crop&q=80",
+      "img": "https://www.marktechpost.com/wp-content/uploads/2026/04/blog-6.png",
       "title": "DeepMind's AlphaEvolve Lets LLMs Rewrite Algorithms",
       "summary": "Google DeepMind researchers published AlphaEvolve, an LLM-powered evolutionary coding agent that autonomously redesigns algorithms in specialized domains. In game theory experiments, AlphaEvolve-generated algorithms outperformed solutions designed by human experts. Rather than simply executing predefined strategies, the system iteratively rewrites its own computational approaches through an evolutionary search process guided by an LLM. The research demonstrates that AI systems can not only solve problems but optimize their own methods for solving them — a step toward self-improving AI systems.",
       "skim": "Google DeepMind's AlphaEvolve uses LLMs to autonomously rewrite game theory algorithms, outperforming human expert-designed solutions.",
@@ -33,12 +93,15 @@
       "src": "MarkTechPost",
       "url": "https://www.marktechpost.com/2026/04/03/google-deepminds-research-lets-an-llm-rewrite-its-own-game-theory-algorithms-and-it-outperformed-the-experts/",
       "tool": false,
-      "tags": ["Research", "Open-source"]
+      "tags": [
+        "Research",
+        "Open-source"
+      ]
     },
     {
       "id": 11,
       "e": "🌳",
-      "img": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=400&fit=crop&q=80",
+      "img": "https://regmedia.co.uk/2026/03/24/shutterstock_2199689367.jpg",
       "title": "PrismML Ships Bonsai: A 1-Bit LLM That Actually Works",
       "summary": "Caltech-backed startup PrismML released Bonsai 8B, a 1-bit large language model that fits in just 1.15 GB of memory while delivering competitive performance against standard 8B-class models. Each weight is stored as a single sign bit ({-1, +1}) with shared scale factors, making the model 14x smaller, 8x faster on edge hardware, and 5x more energy efficient than full-precision equivalents. Bonsai scores 1.06 intelligence-per-GB compared to Qwen3 8B's 0.10/GB. The model is released under Apache 2.0 with variants for Apple (MLX) and NVIDIA (llama.cpp CUDA), plus smaller 4B and 1.7B versions.",
       "skim": "PrismML's Bonsai 8B squeezes a competitive LLM into 1.15 GB using 1-bit weights — 14x smaller and 8x faster than standard models.",
@@ -50,12 +113,15 @@
       "src": "The Register",
       "url": "https://www.theregister.com/2026/04/04/prismml_1bit_llm/",
       "tool": true,
-      "tags": ["Open-source", "Free"]
+      "tags": [
+        "Open-source",
+        "Free"
+      ]
     },
     {
       "id": 10,
       "e": "🔐",
-      "img": "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=800&h=400&fit=crop&q=80",
+      "img": "https://i0.wp.com/www.dipprofit.com/wp-content/uploads/2026/04/1775405572000.png?fit=1024&ssl=1",
       "title": "AI Is Making Crypto Hacks Cheaper, Ledger CTO Warns",
       "summary": "Ledger CTO Charles Guillemet warned that AI is fundamentally undermining cryptocurrency security by driving the cost of attacks toward zero. Tasks that once took skilled researchers months — like reverse engineering software or chaining exploits — can now be done in seconds with AI. Recent attacks include the $285 million Drift protocol breach in April 2026 and $25 million Resolv protocol loss in March. Total crypto losses have exceeded $1.4 billion over the past year. Guillemet also flagged AI-generated code as a growing risk vector, noting that insecure code propagates rapidly when developers rely on AI tools without rigorous verification.",
       "skim": "Ledger's CTO warns AI is driving the cost of crypto exploits to near zero, making blockchain security fundamentally harder.",
@@ -67,12 +133,14 @@
       "src": "CoinDesk",
       "url": "https://www.coindesk.com/tech/2026/04/05/ai-is-making-crypto-s-security-problem-even-worse-ledger-cto-warns",
       "tool": false,
-      "tags": ["Research"]
+      "tags": [
+        "Research"
+      ]
     },
     {
       "id": 9,
       "e": "💰",
-      "img": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=400&fit=crop&q=80",
+      "img": "https://news.crunchbase.com/wp-content/uploads/inflating-ai-global.jpg",
       "title": "Q1 2026 VC Funding Shatters Records at $300 Billion",
       "summary": "Global venture capital funding hit $300 billion across 6,000 startups in Q1 2026, up over 150% quarter-over-quarter and year-over-year. AI dominated with $242 billion — 80% of total funding, up from 55% a year ago. Four of the five largest venture rounds ever were closed this quarter: OpenAI at $122 billion, Anthropic at $30 billion, xAI at $20 billion, and Waymo at $16 billion. These four deals alone captured 65% of all global funding. The US accounted for $250 billion of the total, with China second at $16.1 billion. The quarter nearly equals 70% of all VC spending throughout 2025.",
       "skim": "Q1 2026 venture funding hit a record $300B globally, with AI capturing 80% of all investment — led by OpenAI's $122B mega-round.",
@@ -89,7 +157,7 @@
     {
       "id": 8,
       "e": "🎙️",
-      "img": "https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=800&h=400&fit=crop&q=80",
+      "img": "https://techcrunch.com/wp-content/uploads/2025/08/GettyImages-2207890426.jpg",
       "title": "Microsoft Ships 3 New AI Models to Rival OpenAI, Google",
       "summary": "Microsoft AI launched three new foundational models — MAI-Transcribe-1 for speech-to-text, MAI-Voice-1 for audio generation, and MAI-Image-2 for image creation — just six months after forming its dedicated AI research group. MAI-Transcribe-1 handles 25 languages and runs 2.5x faster than Azure's existing offering. MAI-Voice-1 can generate 60 seconds of audio in one second and supports custom voice creation. The models are available through Microsoft Foundry and a new MAI Playground, positioned as cheaper alternatives to equivalent offerings from OpenAI and Google. The release signals Microsoft is building its own model stack rather than relying solely on its OpenAI partnership.",
       "skim": "Microsoft launches MAI-Transcribe-1, MAI-Voice-1, and MAI-Image-2 — three in-house AI models positioned as cheaper alternatives to OpenAI and Google.",
@@ -101,12 +169,15 @@
       "src": "TechCrunch",
       "url": "https://techcrunch.com/2026/04/02/microsoft-takes-on-ai-rivals-with-three-new-foundational-models/",
       "tool": true,
-      "tags": ["Paid", "API"]
+      "tags": [
+        "Paid",
+        "API"
+      ]
     },
     {
       "id": 1,
       "e": "🖥️",
-      "img": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop&q=80",
+      "img": "https://media2.dev.to/dynamic/image/width=1080,height=1080,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdevtoolpicks.com%2Fstorage%2Fblog-images%2F01KNA161F63QY0B0D7A644A2VM.webp",
       "title": "Cursor 3 Rebuilds IDE Around AI Agents",
       "summary": "Cursor launched version 3 on April 2, completely rebuilding its interface around the premise that AI agents will write most future code. The new Agents Window lets multiple AI agents work in parallel across files, with humans reviewing rather than writing. It is a fundamental rethink of the developer workflow — not an incremental update. Engineers report 3–5x throughput gains on greenfield projects. The update also introduces improved context awareness, allowing agents to reference project-wide patterns and dependencies automatically. Cursor 3 positions the IDE as an orchestration layer rather than a text editor, directly challenging incumbents like VS Code, Windsurf, and JetBrains to match this paradigm shift. The release follows months of beta testing with enterprise teams, and early production deployments suggest the throughput gains hold even on large, established codebases with complex dependency graphs.",
       "skim": "Cursor 3 reimagines the code editor as an agent orchestration layer, letting multiple AI agents write code in parallel while developers review.",
@@ -118,12 +189,14 @@
       "src": "DEV Community",
       "url": "https://dev.to/devtoolpicks/cursor-3-just-launched-with-an-ai-agents-window-what-changed-and-is-it-still-worth-it-496f",
       "tool": true,
-      "tags": ["Paid"]
+      "tags": [
+        "Paid"
+      ]
     },
     {
       "id": 2,
       "e": "🔮",
-      "img": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&h=400&fit=crop&q=80",
+      "img": "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/gemma-4_blog_keyword_meta-dark.width-1300.png",
       "title": "Google Gemma 4 Ships — Most Capable Open Models Yet",
       "summary": "Google released Gemma 4, a new family of open-weight models under Apache 2.0, positioning them as the strongest open-source models available. The family spans from on-device sizes to data-center scale, covering NVIDIA Blackwell GPUs, AMD ROCm, and Google TPUs. Alongside Google's Gemma, PrismML's 1-bit Bonsai, H Company's Holo3, and Arcee's Trinity all shipped this week under Apache 2.0 — together covering every device tier from phones to clusters. Benchmark results show Gemma 4 matching or exceeding several closed-source models on reasoning, coding, and multilingual tasks. The release includes optimized quantization recipes for edge deployment, making it practical to run capable models on consumer hardware. This wave of simultaneous open releases marks a turning point: the quality gap between open and closed models has narrowed to the point where many production use cases no longer require proprietary API access.",
       "skim": "Google ships Gemma 4 under Apache 2.0, spanning phone-to-datacenter sizes, as four other open-weight model families also launch this week.",
@@ -135,7 +208,10 @@
       "src": "Google Blog",
       "url": "https://blog.google/innovation-and-ai/technology/developers-tools/gemma-4/",
       "tool": false,
-      "tags": ["Open-source", "Free"]
+      "tags": [
+        "Open-source",
+        "Free"
+      ]
     },
     {
       "id": 3,
@@ -157,7 +233,7 @@
     {
       "id": 4,
       "e": "🧬",
-      "img": "https://images.unsplash.com/photo-1532187863486-abf4dbce1b86?w=800&h=400&fit=crop&q=80",
+      "img": "https://techcrunch.com/wp-content/uploads/2026/01/GettyImages-2256664479.jpg",
       "title": "Anthropic Acquires Coefficient Bio for ~$400M",
       "summary": "Anthropic paid approximately $400 million to acquire Coefficient Bio, a startup developing AI models specifically for biological research. The deal signals Anthropic's push beyond general-purpose AI into scientific computing, potentially applying Claude's reasoning capabilities to drug discovery, protein interaction modeling, and biomedical literature synthesis. It is Anthropic's largest acquisition to date. Coefficient Bio had built specialized models for genomic analysis and molecular simulation that general-purpose language models struggle to replicate. By integrating these domain-specific capabilities with Claude's reasoning engine, Anthropic aims to create an end-to-end computational biology platform. The biopharma sector is particularly attractive because the cost of failed drug candidates — often exceeding $1 billion — means even marginal improvements in prediction accuracy translate to enormous savings. Anthropic is expected to begin offering bundled bio-AI products within 12 months, potentially including Claude variants fine-tuned on proprietary biological datasets.",
       "skim": "Anthropic makes its largest acquisition ever, paying roughly $400M for biology AI startup Coefficient Bio to push into drug discovery.",
@@ -174,7 +250,7 @@
     {
       "id": 5,
       "e": "🚀",
-      "img": "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&h=400&fit=crop&q=80",
+      "img": "https://techcrunch.com/wp-content/uploads/2026/04/Jordi_Hays_and_John_Coogan_on_set_2_1.webp",
       "title": "OpenAI Acquires Tech Talk Show TBPN",
       "summary": "OpenAI paid low hundreds of millions to acquire TBPN, a prominent technology media property. The acquisition is widely read as a distribution play — giving OpenAI a direct media voice as it navigates an upcoming IPO and intensifying regulatory scrutiny. TBPN's audience of builders and investors gives OpenAI unprecedented reach into the developer and venture community without relying on traditional press coverage. The deal has historical parallels to tech companies acquiring media assets before major public transitions, though the directness of an AI company owning a media outlet has drawn scrutiny. Critics argue TBPN's editorial independence will be compromised, while OpenAI frames it as a content investment. The timing is strategic: with an IPO approaching, controlling narrative during peak regulatory and public attention reduces the risk of hostile coverage shaping investor sentiment during the most critical period of OpenAI's corporate history.",
       "skim": "OpenAI buys tech media property TBPN for hundreds of millions, securing a direct narrative channel ahead of its upcoming IPO.",
@@ -208,7 +284,7 @@
     {
       "id": 7,
       "e": "👨‍💻",
-      "img": "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&h=400&fit=crop&q=80",
+      "img": "https://media2.dev.to/dynamic/image/width=1080,height=1080,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fpi126o7e8b069yu803xw.png",
       "title": "Zuckerberg Writes Code Again After 20-Year Hiatus",
       "summary": "Mark Zuckerberg has returned to writing code for the first time in roughly two decades, submitting three diffs to Meta's internal monorepo. Sources describe him as a heavy user of Claude Code CLI, using it to prototype AI experiments directly. The move is partly symbolic — signaling Meta's all-in AI posture — but also practical, as Zuckerberg aims to stay technically grounded as Meta's AI products become central to its business. The episode highlights a broader trend: AI coding tools are lowering the barrier to technical contribution so dramatically that even executives who have not written production code in years can meaningfully participate. Zuckerberg's hands-on involvement also gives him direct insight into AI tool capabilities and limitations, informing strategic decisions about Meta's own AI product roadmap. Internal sources say his contributions focused on prototyping conversational AI features for Meta's consumer products.",
       "skim": "Mark Zuckerberg submitted his first code in 20 years to Meta's monorepo, using Claude Code CLI to prototype AI experiments.",
