@@ -69,7 +69,7 @@ const F = {
 };
 
 const CATS = ["LLMs","Tools","Startups","Research","Coding AI","Business"];
-const WL = { S:30, M:60 };
+const WL = { S:100, M:150, L:200 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
@@ -77,12 +77,11 @@ const trunc = (text, n) => {
 };
 const getSummary = (item, mode, len) => {
   const source = {
-    Simple: item.eli5 || item.summary,
-    Expert: item.summary,
+    Intern: item.eli5 || item.summary,
+    Techie: item.summary,
     Executive: item.business || item.summary,
   };
   const text = source[mode] || item.summary;
-  if (len === "L") return text;
   return trunc(text, WL[len]);
 };
 
@@ -128,7 +127,7 @@ export default function NeonLuminary() {
 
   useEffect(() => {
     setSumLen(load("sumLen", "M"));
-    setAiMode(load("aiMode", "Expert"));
+    setAiMode(load("aiMode", "Techie"));
     setBookmarks(load("bookmarks", []));
     setReactions(load("reactions", {}));
     setInterests(load("interests", ["LLMs","Tools","Coding AI"]));
@@ -257,8 +256,8 @@ export default function NeonLuminary() {
     </svg>
   );
 
-  const MODE_LABELS = { Simple:"Simple", Expert:"Expert", Executive:"Executive" };
-  const LEN_LABELS = { S:"Skim", M:"Read", L:"Deep Dive" };
+  const MODE_LABELS = { Intern:"Intern", Techie:"Techie", Executive:"Executive" };
+  const LEN_LABELS = { S:"Skim", M:"Focus", L:"Deep Dive" };
 
   /* ── Shared styles ── */
   const label = { fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:2.5, textTransform:"uppercase", color:T.faint };
@@ -368,8 +367,10 @@ export default function NeonLuminary() {
                       <h1 style={headline(isDesktop ? 48 : 42)}>{item.title}</h1>
 
                       {/* Meta row */}
-                      <div style={{ display:"flex", gap:16, alignItems:"center", padding:"16px 0", ...rule, marginBottom:20 }}>
+                      <div style={{ display:"flex", gap:16, alignItems:"center", padding:"16px 0", ...rule, marginBottom:20, flexWrap:"wrap" }}>
                         <span style={meta}>{item.src}</span>
+                        <span style={{ width:4, height:4, borderRadius:"50%", background:T.accent }} />
+                        {updatedAt && <span style={meta}>{fmtDate(updatedAt)}</span>}
                         <span style={{ width:4, height:4, borderRadius:"50%", background:T.accent }} />
                         <span style={meta}>{Math.max(1, Math.ceil(getSummary(item,aiMode,sumLen).split(" ").length/200))} min read</span>
                         <span style={meta}>{(getCnt(item.id,"like")+getCnt(item.id,"fire")).toLocaleString()} reactions</span>
@@ -382,10 +383,16 @@ export default function NeonLuminary() {
                       </div>
 
                       {/* Controls row */}
-                      <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
-                        {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
-                        <span style={{ width:1, height:16, background:T.rule, margin:"0 4px" }} />
-                        {["Simple","Expert","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                      <div style={{ display:"flex", gap:12, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                          <span style={{ ...meta, marginRight:2 }}>Read Mode</span>
+                          {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
+                        </div>
+                        <span style={{ width:1, height:16, background:T.rule }} />
+                        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                          <span style={{ ...meta, marginRight:2 }}>Reading Style</span>
+                          {["Intern","Techie","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                        </div>
                       </div>
 
                       {/* Summary - unified container for all modes */}
@@ -617,16 +624,16 @@ export default function NeonLuminary() {
                   </div>
 
                   <div>
-                    {/* Summary length */}
-                    <div style={{ ...label, marginBottom:8 }}>Summary Length</div>
+                    {/* Read Mode */}
+                    <div style={{ ...label, marginBottom:8 }}>Read Mode</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
                       {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
                     </div>
 
-                    {/* Reading mode */}
-                    <div style={{ ...label, marginBottom:8 }}>Reading Mode</div>
+                    {/* Reading Style */}
+                    <div style={{ ...label, marginBottom:8 }}>Reading Style</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                      {["Simple","Expert","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                      {["Intern","Techie","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                     </div>
                   </div>
                 </div>
