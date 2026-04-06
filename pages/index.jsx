@@ -76,14 +76,14 @@ const trunc = (text, n) => {
   return w.length <= n ? text : w.slice(0, n).join(" ") + "...";
 };
 const getSummary = (item, mode, len) => {
+  if (len === "S") return item.skim || trunc(item.summary, 25);
+  if (len === "L") return item.detailed || item.summary;
   const source = {
     Intern: item.eli5 || item.summary,
     Techie: item.summary,
     Executive: item.business || item.summary,
   };
-  const text = source[mode] || item.summary;
-  if (len === "L") return text;
-  return trunc(text, WL[len]);
+  return source[mode] || item.summary;
 };
 
 const fmtDate = (iso) => {
@@ -271,7 +271,7 @@ export default function NeonLuminary() {
 
   /* ── Btn helpers ── */
   const PillBtn = ({label:l, on, onClick}) => (
-    <button onClick={onClick} style={{ padding:"5px 12px", borderRadius:14, border:`1px solid ${on ? T.accent : T.rule}`, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background: on ? T.accentMuted : "transparent", color: on ? T.accent : T.faint, cursor:"pointer", transition:"all .15s" }}>{l}</button>
+    <button onClick={onClick} style={{ padding:"5px 12px", borderRadius:14, border:`1px solid ${on ? T.accent : T.rule}`, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background: on ? T.accentMuted : T.bgHi, color: on ? T.accent : T.faint, cursor:"pointer", transition:"all .15s" }}>{l}</button>
   );
   const RxBtn = ({id, type, emoji}) => {
     const on = reactions[id]===type;
