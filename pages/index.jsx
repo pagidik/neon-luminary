@@ -4,32 +4,32 @@ import { useState, useRef, useEffect, useCallback } from "react";
 /* ── Design Tokens (DESIGN.md) ──────────────────────────────── */
 const themes = {
   dark: {
-    bg: "#0e0e0f",
-    bgEl: "#131314",
-    bgHi: "#19191b",
-    bgHighest: "#262627",
-    bgVariant: "#202125",
-    bgBright: "#2c2d31",
-    text: "#f3f4f6",
-    muted: "#adaaab",
-    faint: "#7f8085",
-    accent: "#2D5BFF",
-    accentDim: "#3e65ff",
-    accentAlt: "#A855F7",
-    accentMint: "#00FF9F",
-    accentMuted: "rgba(45,91,255,0.16)",
-    accentAltMuted: "rgba(168,85,247,0.18)",
-    rule: "rgba(72,72,73,0.15)",
-    ruleStrong: "rgba(72,72,73,0.25)",
-    success: "#00FF9F",
-    successMuted: "rgba(0,255,159,0.12)",
-    warning: "#ffb84d",
-    error: "#ff5c7a",
-    info: "#66b3ff",
-    navBg: "rgba(32,33,37,0.6)",
-    toastBg: "rgba(32,33,37,0.82)",
-    glow: "0 0 24px rgba(45,91,255,0.22)",
-    glowAlt: "0 0 18px rgba(168,85,247,0.24)",
+    bg: "#0c0c0e",
+    bgEl: "#161618",
+    bgHi: "#1e1e22",
+    bgHighest: "#28282e",
+    bgVariant: "#1a1a1e",
+    bgBright: "#2a2a30",
+    text: "#e8e9ed",
+    muted: "#b0b3ba",
+    faint: "#6b6e76",
+    accent: "#4d7aff",
+    accentDim: "#5a85ff",
+    accentAlt: "#9d6cf0",
+    accentMint: "#3dd9a0",
+    accentMuted: "rgba(77,122,255,0.14)",
+    accentAltMuted: "rgba(157,108,240,0.14)",
+    rule: "rgba(255,255,255,0.06)",
+    ruleStrong: "rgba(255,255,255,0.10)",
+    success: "#3dd9a0",
+    successMuted: "rgba(61,217,160,0.10)",
+    warning: "#f0a840",
+    error: "#f06070",
+    info: "#5aaaf0",
+    navBg: "rgba(22,22,24,0.80)",
+    toastBg: "rgba(22,22,24,0.90)",
+    glow: "0 0 20px rgba(77,122,255,0.12)",
+    glowAlt: "0 0 16px rgba(157,108,240,0.14)",
   },
   light: {
     bg: "#f7f8fa",
@@ -411,9 +411,18 @@ export default function NeonLuminary() {
                         fontFamily:F.body,
                       }}>
                         <div style={{ ...label, color:T.accent, marginBottom:12, fontSize:8, letterSpacing:3 }}>{LEN_LABELS[sumLen].toUpperCase()}</div>
-                        {getSummary(item,aiMode,sumLen).split("\n\n").map((p,i) => (
-                          <p key={i} style={{ marginBottom: i < getSummary(item,aiMode,sumLen).split("\n\n").length - 1 ? 20 : 0 }}>{p}</p>
-                        ))}
+                        {(() => {
+                          const raw = getSummary(item,aiMode,sumLen);
+                          const parts = raw.includes("\n\n") ? raw.split("\n\n") : raw.split(/(?<=\.)\s+/).reduce((acc, s, i) => {
+                            const last = acc.length - 1;
+                            if (last < 0 || acc[last].split(/(?<=\.)\s+/).length >= 3) acc.push(s);
+                            else acc[last] += " " + s;
+                            return acc;
+                          }, []);
+                          return parts.map((p, i) => (
+                            <p key={i} style={{ marginBottom: i < parts.length - 1 ? 16 : 0, textIndent: i > 0 ? "1.5em" : 0 }}>{p.trim()}</p>
+                          ));
+                        })()}
                       </div>
 
                       {/* Tags */}
