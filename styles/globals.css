@@ -2,9 +2,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  font-family: 'DM Sans', -apple-system, sans-serif;
-  background: #f5f0e8;
-  color: #1a1816;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #0e0e0f;
+  color: #f3f4f6;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
 }

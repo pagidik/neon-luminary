@@ -1,99 +1,143 @@
-# Design System — Neon Luminary
+# Design System Specification: High-End AI Editorial
 
-## Product Context
-- **What this is:** Curated daily AI news briefing app
-- **Who it's for:** Tech-savvy AI enthusiasts who want a quick, high-signal morning read
-- **Space/industry:** AI news, tech briefings (peers: The Verge, Morning Brew, TLDR, Hacker News)
-- **Project type:** Mobile-first web app (480px max), card-based feed with five tabs
+## 1. Overview & Creative North Star: "The Neon Luminary"
+This design system is built to move the AI news and tools space away from generic SaaS "dashboards" and toward a high-end, editorial experience. Our Creative North Star is **The Neon Luminary**: an aesthetic that blends the precision of deep-space tech with the tactility of physical layers.
 
-## Aesthetic Direction
-- **Direction:** Editorial/Magazine
-- **Decoration level:** Intentional (thin ruled lines as dividers, subtle texture on hero)
-- **Mood:** Premium morning newspaper on your phone. Confident, literate, unhurried. Authority through typography and restraint, not neon glow.
-- **Key risks taken:** Light mode default (breaks from every AI product), extreme type scale (42px serif headlines), restrained single-accent color
+We reject the "flat" web. Instead, we embrace **Dimensional Depth**. By combining Neo-brutalism’s bold confidence with Glassmorphism’s ethereal lightness, we create a UI that feels alive. This is achieved through intentional asymmetry—such as oversized headlines paired with compact metadata—and a "No-Line" philosophy that uses light and shadow to define boundaries rather than rigid strokes.
 
-## Typography
-- **Display/Hero:** Instrument Serif (400) — modern editorial serif, positions the app as a publication not a tool. 42px featured, 28px standard headlines.
-- **Body:** DM Sans (400, 500) — clean geometric sans, pairs perfectly with Instrument Serif. 14-15px body text.
-- **UI/Labels:** DM Sans (600, uppercase, letter-spacing: 2px) — structural metadata
-- **Data/Tables:** Geist Mono (400, 500, 600) — timestamps, counts, metadata. Supports tabular-nums.
-- **Code:** Geist Mono
-- **Loading:** Google Fonts CDN
-  ```
-  Instrument+Serif:ital@0;1
-  DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700
-  Geist+Mono:wght@400;500;600
-  ```
-- **Scale:**
-  - Hero headline: 42px / 1.06 line-height / -0.5px tracking
-  - Standard headline: 28px / 1.12 / -0.3px
-  - Subhead: 18px / 1.2
-  - Body: 15px / 1.65
-  - Small body: 13px / 1.5
-  - Label: 10px / uppercase / 2px tracking
-  - Mono meta: 11px / 0.5px tracking
+---
 
-## Color
+## 2. Colors & Atmospheric Depth
 
-### Light Mode (default)
-- **Approach:** Restrained, single accent
-- **Background:** #f5f0e8 (warm cream paper)
-- **Surface elevated:** #ece7dd
-- **Surface high:** #e2ddd3
-- **Text primary:** #1a1816 (warm ink)
-- **Text muted:** #6b6560
-- **Text faint:** #9a9590
-- **Accent:** #c45a2d (burnt sienna, the only color that "pops")
-- **Accent muted:** rgba(196, 90, 45, 0.12)
-- **Rule/Divider:** rgba(26, 24, 22, 0.12)
-- **Rule strong:** rgba(26, 24, 22, 0.25)
+The palette is rooted in the `background` (#0e0e0f), a void that allows our vibrant neon accents to vibrate.
 
-### Dark Mode
-- **Background:** #111113
-- **Surface elevated:** #1a1a1d
-- **Surface high:** #242428
-- **Text primary:** #ede9e1 (warm off-white)
-- **Text muted:** #8a8680
-- **Text faint:** #5a5652
-- **Accent:** #d4874a (warmer, lighter variant for dark backgrounds)
-- **Accent muted:** rgba(212, 135, 74, 0.15)
-- **Rule/Divider:** rgba(237, 233, 225, 0.1)
-- **Rule strong:** rgba(237, 233, 225, 0.2)
+### Core Palette
+- **background:** `#0e0e0f`
+- **surface:** `#0e0e0f`
+- **surface-container-low:** `#131314`
+- **surface-container:** `#19191b`
+- **surface-container-high:** `#1f1f22`
+- **surface-container-highest:** `#262627`
+- **surface-variant:** `#202125`
+- **surface-bright:** `#2c2d31`
+- **on-surface:** `#f3f4f6`
+- **on-surface-variant:** `#adaaab`
+- **outline-variant:** `#484849`
+- **primary:** `#2D5BFF`
+- **primary-dim:** `#3e65ff`
+- **secondary:** `#A855F7`
+- **tertiary:** `#00FF9F`
+- **error:** `#ff5c7a`
+- **warning:** `#ffb84d`
+- **info:** `#66b3ff`
 
-### Semantic
-- **Success:** #3d7a4a (light) / #6bc77a (dark)
-- **Warning:** #b5882a (light) / #d4a24e (dark)
-- **Error:** #b94040 (light) / #e05c5c (dark)
-- **Info:** #4a6b8a (light) / #7c8aaa (dark)
+### The "No-Line" Rule
+**Explicit Instruction:** Do not use 1px solid borders to section content. Boundaries are defined by shifting between `surface` tiers.
+- **Example:** A news feed item should not have a border; it should be a `surface-container-low` card resting on the `surface` background.
 
-## Spacing
-- **Base unit:** 4px
-- **Density:** Comfortable
-- **Scale:** 2xs(2) xs(4) sm(8) md(16) lg(24) xl(32) 2xl(48) 3xl(64)
-- **Card padding:** 24px
-- **Section gap:** 48px
-- **Story vertical padding:** 24px
+### Surface Hierarchy & Nesting
+Treat the UI as a series of nested, frosted layers.
+- **Base:** `surface` (#0e0e0f)
+- **Sectioning:** `surface-container-low` (#131314) for large background areas.
+- **Component Level:** `surface-container` (#19191b) for cards and main modules.
+- **Active/Elevated:** `surface-container-highest` (#262627) for hovered states or modal overlays.
 
-## Layout
-- **Approach:** Grid-disciplined
-- **Max content width:** 480px (mobile-first, centered)
-- **Container padding:** 24px horizontal
-- **Border radius:** 4px (subtle, almost square. No bubbly rounds.)
-- **Dividers:** 1px solid rules between stories instead of cards. Typography is the structure.
+### The "Glass & Gradient" Rule
+To achieve the "High-End" feel, use **Glassmorphism** for floating UI (navigation bars, tooltips, and context menus).
+- **Formula:** `surface-variant` at 60% opacity + `backdrop-filter: blur(20px)`.
+- **Signature Textures:** For primary CTAs, use a linear gradient from `primary` (#2D5BFF) to `primary-dim` (#3e65ff) at a 135° angle. This adds a "liquid" soul to the tech-heavy interface.
 
-## Motion
-- **Approach:** Intentional
-- **Easing:** enter(ease-out) exit(ease-in) move(ease-in-out)
-- **Duration:** micro(50-100ms) short(150-250ms) medium(250-400ms)
-- **Page transitions:** Existing slide-r/slide-l (keep, 320ms cubic-bezier)
-- **Theme transition:** background/color 300ms ease
-- **No:** bounce, spring, overshoot. Clean entries and exits only.
+---
 
-## Decisions Log
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-04-04 | Light mode as default | Break from dark-theme AI convention. Cream paper positions as editorial publication. |
-| 2026-04-04 | Instrument Serif for headlines | Serif headlines differentiate from every geometric-sans AI product. Signals editorial authority. |
-| 2026-04-04 | Extreme type scale (42px hero) | Headlines fill the screen like a broadsheet front page. Creates physical presence per story. |
-| 2026-04-04 | Single burnt sienna accent | Restrained palette. One warm accent does all the work. No category-specific neon colors. |
-| 2026-04-04 | Rules instead of cards | Flat editorial layout with horizontal dividers. Typography provides structure, not box-shadows. |
+## 3. Typography: The Editorial Voice
+
+We utilize a dual-font strategy to balance technical precision with aggressive, modern headlines.
+
+- **Display & Headlines:** `Space Grotesk`. This is our "Brutalist" edge. Use `display-lg` for hero AI news titles to command attention. The wide apertures and geometric shapes feel tech-forward.
+- **Body & UI Labels:** `Inter`. This is our functional core. It provides maximum readability for long-form AI tool descriptions and dense news feeds.
+- **Optional Mono:** `Geist Mono` for timestamps, small counters, and token-like metadata.
+
+### Type Scale
+- **display-lg:** 52px / 1.02 / -0.04em
+- **display-md:** 40px / 1.05 / -0.03em
+- **display-sm:** 32px / 1.08 / -0.02em
+- **headline:** 24px / 1.15 / -0.01em
+- **title:** 18px / 1.25
+- **body-lg:** 16px / 1.7
+- **body-md:** 14px / 1.65
+- **label-md:** 11px / uppercase / 0.16em
+- **mono-meta:** 11px / 0.02em
+
+### Hierarchy Intent
+Use extreme scale contrast. A `display-sm` headline should often sit directly above a `label-md` category tag in `tertiary` (#00FF9F) to create an editorial, high-fashion layout.
+
+---
+
+## 4. Elevation & Depth: Tonal Layering
+
+Traditional shadows are too heavy for this system. We use **Tonal Layering** and **Light Leaks**.
+
+- **The Layering Principle:** Instead of a drop shadow, lift a card by moving it from `surface-container-low` to `surface-container-high`.
+- **Ambient Shadows:** When a true float is required (e.g. a tooltip), use a 32px blur with 6% opacity. Use a tinted shadow: `rgba(151, 169, 255, 0.08)`—this incorporates the `primary` hue into the shadow itself, simulating a neon glow.
+- **The Ghost Border Fallback:** If a container lacks contrast on mobile, use `outline-variant` (#484849) at **15% opacity**. Never use a 100% opaque stroke.
+- **Subtle Glows:** Elements using `secondary` (#A855F7) should have a soft outer glow (`box-shadow: 0 0 15px rgba(168, 85, 247, 0.3)`) to simulate active AI processing.
+
+---
+
+## 5. Components
+
+### Buttons
+- **Primary:** Gradient of `primary` to `primary-dim`. Roundedness: `md` (0.75rem). Text: dark/near-black for contrast.
+- **Secondary:** Ghost style. Transparent background with a Ghost Border and `primary` text.
+- **Tertiary:** Text-only using `tertiary` (#00FF9F) with an underlined hover state.
+
+### Cards & Feed Items
+- **Strict Rule:** No dividers. Separate articles using `xl` (1.5rem) vertical spacing or a subtle background shift to `surface-container-low`.
+- **Interaction:** On hover, a card should transition its background from `surface-container` to `surface-bright` and scale by `1.02`.
+- **Corner radius:** `lg` (1rem) for primary feed cards.
+
+### AI Input Fields
+- **Style:** darkest sink effect using the base background.
+- **Focus State:** A 1px Ghost Border using `secondary` (#A855F7) at 40% opacity with a soft 4px outer glow.
+
+### The "Intelligence Pulse" (Chips)
+Used for AI categories (e.g. LLM, Generative Art, Robotics).
+- **Style:** `surface-variant` background, pill radius, with a leading 4px dot of `tertiary` (#00FF9F) that can pulse subtly.
+
+### Floating Navigation
+- **Style:** glass bar using `surface-variant` at 60% opacity with `blur(20px)`.
+- **Behavior:** should feel suspended above content, not boxed in.
+
+---
+
+## 6. Motion
+
+- **General:** soft, premium, never bouncy.
+- **Duration:** 160ms micro / 240ms standard / 360ms feature.
+- **Easing:** `cubic-bezier(0.22, 1, 0.36, 1)` for entrances, `ease-out` for hover.
+- **Hover:** cards can scale to `1.02`; buttons to `1.01`.
+- **Glow transitions:** animate opacity, blur, and background—not hard borders.
+
+---
+
+## 7. Roundedness Scale
+- **Small (`sm`):** 0.25rem — focus rings, tiny pills
+- **Default (`md`):** 0.75rem — standard buttons and controls
+- **Large (`lg`):** 1rem — cards
+- **Extra Large (`xl`):** 1.5rem — hero panels and modals
+
+---
+
+## 8. Do’s and Don’ts
+
+### Do
+- **DO** use whitespace as a structural element. If in doubt, add more padding.
+- **DO** use `tertiary` (#00FF9F) for live/signal indicators.
+- **DO** create depth through layered surfaces, blur, and glows.
+- **DO** let headlines feel oversized and slightly brutalist.
+
+### Don’t
+- **DON'T** use pure white for dense body text; use `on-surface-variant`.
+- **DON'T** use hard section dividers as the main organizing device.
+- **DON'T** use sharp 90-degree corners.
+- **DON'T** default back to generic SaaS dashboard styling.

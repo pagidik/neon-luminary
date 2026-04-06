@@ -3,27 +3,68 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 /* ── Design Tokens (DESIGN.md) ──────────────────────────────── */
 const themes = {
-  light: {
-    bg: "#f5f0e8", bgEl: "#ece7dd", bgHi: "#e2ddd3",
-    text: "#1a1816", muted: "#6b6560", faint: "#9a9590",
-    accent: "#c45a2d", accentMuted: "rgba(196,90,45,0.12)",
-    rule: "rgba(26,24,22,0.12)", ruleStrong: "rgba(26,24,22,0.25)",
-    success: "#3d7a4a", warning: "#b5882a", error: "#b94040", info: "#4a6b8a",
-    navBg: "rgba(245,240,232,0.92)", toastBg: "#e2ddd3",
-  },
   dark: {
-    bg: "#111113", bgEl: "#1a1a1d", bgHi: "#242428",
-    text: "#ede9e1", muted: "#8a8680", faint: "#5a5652",
-    accent: "#d4874a", accentMuted: "rgba(212,135,74,0.15)",
-    rule: "rgba(237,233,225,0.1)", ruleStrong: "rgba(237,233,225,0.2)",
-    success: "#6bc77a", warning: "#d4a24e", error: "#e05c5c", info: "#7c8aaa",
-    navBg: "rgba(17,17,19,0.92)", toastBg: "#242428",
+    bg: "#0e0e0f",
+    bgEl: "#131314",
+    bgHi: "#19191b",
+    bgHighest: "#262627",
+    bgVariant: "#202125",
+    bgBright: "#2c2d31",
+    text: "#f3f4f6",
+    muted: "#adaaab",
+    faint: "#7f8085",
+    accent: "#2D5BFF",
+    accentDim: "#3e65ff",
+    accentAlt: "#A855F7",
+    accentMint: "#00FF9F",
+    accentMuted: "rgba(45,91,255,0.16)",
+    accentAltMuted: "rgba(168,85,247,0.18)",
+    rule: "rgba(72,72,73,0.15)",
+    ruleStrong: "rgba(72,72,73,0.25)",
+    success: "#00FF9F",
+    successMuted: "rgba(0,255,159,0.12)",
+    warning: "#ffb84d",
+    error: "#ff5c7a",
+    info: "#66b3ff",
+    navBg: "rgba(32,33,37,0.6)",
+    toastBg: "rgba(32,33,37,0.82)",
+    glow: "0 0 24px rgba(45,91,255,0.22)",
+    glowAlt: "0 0 18px rgba(168,85,247,0.24)",
+  },
+  light: {
+    bg: "#f7f8fa",
+    bgEl: "#eef0f4",
+    bgHi: "#e4e6eb",
+    bgHighest: "#d8dae0",
+    bgVariant: "#e8eaef",
+    bgBright: "#dddfe5",
+    text: "#1a1c20",
+    muted: "#55585f",
+    faint: "#888b93",
+    accent: "#1a3fd6",
+    accentDim: "#2d4fe0",
+    accentAlt: "#8b3dd4",
+    accentMint: "#00c77c",
+    accentMuted: "rgba(26,63,214,0.10)",
+    accentAltMuted: "rgba(139,61,212,0.10)",
+    rule: "rgba(26,28,32,0.08)",
+    ruleStrong: "rgba(26,28,32,0.14)",
+    success: "#00a86b",
+    successMuted: "rgba(0,168,107,0.10)",
+    warning: "#cc8800",
+    error: "#d44060",
+    info: "#2878cc",
+    navBg: "rgba(247,248,250,0.75)",
+    toastBg: "rgba(247,248,250,0.90)",
+    glow: "0 0 24px rgba(26,63,214,0.08)",
+    glowAlt: "0 0 18px rgba(139,61,212,0.10)",
   },
 };
+const THEME_LOCKED = false;
 
 const F = {
-  display: "'Instrument Serif',Georgia,serif",
-  body: "'DM Sans',-apple-system,sans-serif",
+  display: "'Playfair Display',Georgia,serif",
+  body: "'Inter',-apple-system,sans-serif",
   mono: "'Geist Mono',monospace",
 };
 
@@ -32,21 +73,17 @@ const WL = { S:30, M:60 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
-  return w.length <= n ? text : w.slice(0, n).join(" ") + "…";
+  return w.length <= n ? text : w.slice(0, n).join(" ") + "...";
 };
 const getSummary = (item, mode, len) => {
-  if (len === "L") {
-    /* Detailed briefing — combine all available perspectives */
-    let parts = [item.summary];
-    if (item.eli5) parts.push("In simple terms — " + item.eli5);
-    if (item.business) parts.push("Business impact — " + item.business);
-    return parts.join("\n\n");
-  }
-  const lim = WL[len];
-  const text = mode === "ELI5" ? (item.eli5 || item.summary)
-             : mode === "Business" ? (item.business || item.summary)
-             : item.summary;
-  return trunc(text, lim);
+  const source = {
+    Simple: item.eli5 || item.summary,
+    Expert: item.summary,
+    Executive: item.business || item.summary,
+  };
+  const text = source[mode] || item.summary;
+  if (len === "L") return text;
+  return trunc(text, WL[len]);
 };
 
 const fmtDate = (iso) => {
@@ -73,7 +110,7 @@ export default function NeonLuminary() {
   const [rawPage, setRawPage] = useState(0);
   const [tab, setTab] = useState("feed");
   const [sumLen, setSumLen] = useState("M");
-  const [aiMode, setAiMode] = useState("Technical");
+  const [aiMode, setAiMode] = useState("Expert");
   const [bookmarks, setBookmarks] = useState([]);
   const [reactions, setReactions] = useState({});
   const [interests, setInterests] = useState(["LLMs","Tools","Coding AI"]);
@@ -84,18 +121,18 @@ export default function NeonLuminary() {
   const [slideKey, setSlideKey] = useState(0);
   const [audioOn, setAudioOn] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
 
   const T = dark ? themes.dark : themes.light;
 
   useEffect(() => {
     setSumLen(load("sumLen", "M"));
-    setAiMode(load("aiMode", "Technical"));
+    setAiMode(load("aiMode", "Expert"));
     setBookmarks(load("bookmarks", []));
     setReactions(load("reactions", {}));
     setInterests(load("interests", ["LLMs","Tools","Coding AI"]));
-    setDark(load("dark", false));
+    setDark(load("dark", true));
     setHydrated(true);
   }, []);
 
@@ -111,7 +148,7 @@ export default function NeonLuminary() {
   useEffect(() => { if (hydrated) save("bookmarks", bookmarks); }, [bookmarks, hydrated]);
   useEffect(() => { if (hydrated) save("reactions", reactions); }, [reactions, hydrated]);
   useEffect(() => { if (hydrated) save("interests", interests); }, [interests, hydrated]);
-  useEffect(() => { if (hydrated) save("dark", dark); }, [dark, hydrated]);
+  useEffect(() => { if (hydrated && !THEME_LOCKED) save("dark", dark); }, [dark, hydrated]);
   useEffect(() => { document.documentElement.style.background = T.bg; document.body.style.background = T.bg; }, [T.bg]);
 
   useEffect(() => {
@@ -181,7 +218,7 @@ export default function NeonLuminary() {
   const stopAudio = () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } setAudioOn(false); };
   const playAudio = async (it) => {
     if (audioOn) { stopAudio(); return; }
-    setAudioOn(true); toast$("Generating…", "◎");
+    setAudioOn(true); toast$("Generating...", "◎");
     try {
       const resp = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: it.title, summary: getSummary(it, aiMode, "L"), whyItMatters: it.whyItMatters }) });
       if (!resp.ok) throw new Error("api");
@@ -189,7 +226,7 @@ export default function NeonLuminary() {
       const audio = new Audio(url); audioRef.current = audio;
       audio.onended = () => { stopAudio(); URL.revokeObjectURL(url); };
       audio.onerror = () => { stopAudio(); URL.revokeObjectURL(url); };
-      audio.play(); toast$("Playing…", "▶");
+      audio.play(); toast$("Playing...", "▶");
     } catch { setAudioOn(false); toast$("Audio unavailable", "✕"); }
   };
 
@@ -220,9 +257,8 @@ export default function NeonLuminary() {
     </svg>
   );
 
-  const MODE_LABELS = { ELI5:"Simple", Technical:"Expert", Business:"Executive" };
+  const MODE_LABELS = { Simple:"Simple", Expert:"Expert", Executive:"Executive" };
   const LEN_LABELS = { S:"Skim", M:"Read", L:"Deep Dive" };
-  const readMode = sumLen === "L";
 
   /* ── Shared styles ── */
   const label = { fontFamily:F.mono, fontSize:10, fontWeight:600, letterSpacing:2.5, textTransform:"uppercase", color:T.faint };
@@ -235,28 +271,28 @@ export default function NeonLuminary() {
 
   /* ── Btn helpers ── */
   const PillBtn = ({label:l, on, onClick}) => (
-    <button onClick={onClick} style={{ padding:"5px 12px", borderRadius:2, border:`1px solid ${on ? T.accent : T.rule}`, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background: on ? T.accentMuted : "transparent", color: on ? T.accent : T.faint, cursor:"pointer", transition:"all .15s" }}>{l}</button>
+    <button onClick={onClick} style={{ padding:"5px 12px", borderRadius:14, border:`1px solid ${on ? T.accent : T.rule}`, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background: on ? T.accentMuted : "transparent", color: on ? T.accent : T.faint, cursor:"pointer", transition:"all .15s" }}>{l}</button>
   );
   const RxBtn = ({id, type, emoji}) => {
     const on = reactions[id]===type;
     return (
-      <button onClick={()=>toggleRx(id,type)} style={{ display:"flex", alignItems:"center", gap:6, background: on ? T.accentMuted : T.bgEl, border:`1px solid ${on ? T.accent : T.rule}`, borderRadius:2, padding:"7px 14px", fontFamily:F.body, fontSize:12, fontWeight:600, color: on ? T.accent : T.muted, cursor:"pointer", transition:"all .15s" }}>
+      <button onClick={()=>toggleRx(id,type)} style={{ display:"flex", alignItems:"center", gap:6, background: on ? T.accentMuted : T.bgEl, border:`1px solid ${on ? T.accent : T.rule}`, borderRadius:14, padding:"7px 14px", fontFamily:F.body, fontSize:12, fontWeight:600, color: on ? T.accent : T.muted, cursor:"pointer", transition:"all .15s" }}>
         {emoji} <span style={{ fontFamily:F.mono, fontSize:10 }}>{getCnt(id,type)}</span>
       </button>
     );
   };
   const IcoBtn = ({ico, on, onClick}) => (
-    <button onClick={onClick} style={{ width:36, height:36, background: on ? T.accentMuted : T.bgEl, border:`1px solid ${on ? T.accent : T.rule}`, borderRadius:2, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:14, color: on ? T.accent : T.muted, transition:"all .15s", flexShrink:0 }}>{ico}</button>
+    <button onClick={onClick} style={{ width:36, height:36, background: on ? T.accentMuted : T.bgEl, border:`1px solid ${on ? T.accent : T.rule}`, borderRadius:12, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:14, color: on ? T.accent : T.muted, transition:"all .15s", flexShrink:0 }}>{ico}</button>
   );
   const Tag = ({t}) => (
-    <span style={{ padding:"3px 10px", borderRadius:2, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background:T.accentMuted, color:T.accent }}>{t}</span>
+    <span style={{ padding:"3px 10px", borderRadius:14, fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", background:T.accentMuted, color:T.accent }}>{t}</span>
   );
 
   /* Loading */
   if (loading) return (
     <div style={{ minHeight:"100dvh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16, transition:"background .3s" }}>
       <div style={{ width:32, height:32, border:`2px solid ${T.rule}`, borderTopColor:T.accent, borderRadius:"50%", animation:"spin .7s linear infinite" }} />
-      <span style={{ ...label, color:T.muted }}>Loading briefing…</span>
+      <span style={{ ...label, color:T.muted }}>Loading briefing...</span>
       <style>{`@keyframes spin { to { transform:rotate(360deg) } }`}</style>
     </div>
   );
@@ -264,16 +300,16 @@ export default function NeonLuminary() {
   return (
     <>
       <Head>
-        <title>Pulse AI — Real-Time Heartbeat of AI News</title>
-        <meta name="description" content="Pulse AI — curated daily AI news, tools, and research. The real-time heartbeat of AI." />
+        <title>Pulse AI - High-End AI Editorial</title>
+        <meta name="description" content="Pulse AI - a high-end editorial briefing for AI news, tools, and research." />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content={T.bg} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta property="og:title" content="Pulse AI — Real-Time Heartbeat of AI News" />
+        <meta property="og:title" content="Pulse AI - Real-Time Heartbeat of AI News" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </Head>
 
       <div style={{ minHeight:"100dvh", background:T.bg, color:T.text, display:"flex", flexDirection:"column", maxWidth: isDesktop ? 1080 : 480, margin:"0 auto", position:"relative", transition:"background .3s, color .3s" }}>
@@ -285,7 +321,7 @@ export default function NeonLuminary() {
             {isDesktop && (
               <nav style={{ display:"flex", gap:4 }}>
                 {TABS.map(t => (
-                  <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:2, background: tab===t.id ? T.accentMuted : "transparent", border:"none", cursor:"pointer", transition:"all .15s" }}>
+                  <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 14px", borderRadius:12, background: tab===t.id ? T.accentMuted : "transparent", border:"none", cursor:"pointer", transition:"all .15s" }}>
                     <NavIcon id={t.id} color={tab===t.id ? T.accent : T.faint} size={16} />
                     <span style={{ fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", color: tab===t.id ? T.accent : T.faint }}>{t.label}</span>
                   </button>
@@ -295,7 +331,7 @@ export default function NeonLuminary() {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             {updatedAt && <span style={meta}>{fmtDate(updatedAt)}</span>}
-            <button onClick={()=>setDark(d=>!d)} style={{ background:"none", border:`1px solid ${T.rule}`, borderRadius:2, padding:"4px 10px", fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1, color:T.faint, cursor:"pointer" }}>{dark?"LIGHT":"DARK"}</button>
+            <button onClick={() => setDark(d => !d)} style={{ background:"none", border:`1px solid ${T.rule}`, borderRadius:16, padding:"4px 10px", fontFamily:F.mono, fontSize:9, fontWeight:600, letterSpacing:1, color:T.faint, cursor:"pointer", transition:"all .15s" }}>{dark ? "☀ LIGHT" : "● DARK"}</button>
           </div>
         </header>
 
@@ -313,7 +349,7 @@ export default function NeonLuminary() {
                   <div className={slideDir==="r"?"slide-r":"slide-l"} key={slideKey}>
                     <div style={{ padding: isDesktop ? "32px 48px" : "24px 24px 24px" }}>
                       {/* Featured hero */}
-                      <div style={{ borderRadius:4, overflow:"hidden", marginBottom:20, borderBottom:`2px solid ${T.accent}`, position:"relative", background:`linear-gradient(135deg, ${T.bgEl}, ${T.bgHi})` }}>
+                      <div style={{ borderRadius:20, overflow:"hidden", marginBottom:20, borderBottom:`2px solid ${T.accent}`, position:"relative", background:`linear-gradient(135deg, ${T.bgEl}, ${T.bgHi})` }}>
                         {item.img
                           ? <img src={item.img} alt="" style={{ width:"100%", height: isDesktop ? 320 : 200, objectFit:"cover", display:"block" }} />
                           : <div style={{ padding: isDesktop ? "48px 0" : "36px 0", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -328,7 +364,7 @@ export default function NeonLuminary() {
                         <span style={meta}>{page+1} / {displayNews.length}</span>
                       </div>
 
-                      {/* Headline — extreme scale */}
+                      {/* Headline - extreme scale */}
                       <h1 style={headline(isDesktop ? 48 : 42)}>{item.title}</h1>
 
                       {/* Meta row */}
@@ -340,8 +376,8 @@ export default function NeonLuminary() {
                       </div>
 
                       {/* Key Takeaway */}
-                      <div style={{ borderLeft:`2px solid ${T.accent}`, background:T.accentMuted, borderRadius:"0 4px 4px 0", padding:"14px 16px", marginBottom:20 }}>
-                        <div style={{ ...catLabel, marginBottom:6 }}>Key Takeaway</div>
+                      <div style={{ borderLeft:`2px solid ${T.success}`, background:T.successMuted, borderRadius:"0 16px 16px 0", padding:"14px 16px", marginBottom:20 }}>
+                        <div style={{ ...catLabel, color:T.success, marginBottom:6 }}>Key Takeaway</div>
                         <div style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text, lineHeight:1.55 }}>{item.whyItMatters}</div>
                       </div>
 
@@ -349,31 +385,32 @@ export default function NeonLuminary() {
                       <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
                         {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
                         <span style={{ width:1, height:16, background:T.rule, margin:"0 4px" }} />
-                        {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                        {["Simple","Expert","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                       </div>
 
-                      {/* Summary — reading mode on Deep Dive */}
+                      {/* Summary - unified container for all modes */}
                       <div style={{
                         ...bodyText, marginBottom:20, maxWidth: isDesktop ? 640 : undefined, transition:"all .3s ease",
-                        ...(readMode ? {
-                          background: dark ? "#0d0c0a" : "#eae5d9",
-                          padding:"24px 20px", borderRadius:4, border:`1px solid ${T.rule}`,
-                          fontSize: isDesktop ? 17 : 16, lineHeight:1.85, color:T.text,
-                          fontFamily:F.display,
-                        } : {
-                          fontSize: isDesktop ? 15 : 14,
-                        }),
+                        background:T.bgEl,
+                        padding:"24px 20px",
+                        borderRadius:24,
+                        border:`1px solid ${T.rule}`,
+                        boxShadow:T.glow,
+                        fontSize: isDesktop ? 17 : 16,
+                        lineHeight:1.85,
+                        color:T.text,
+                        fontFamily:F.body,
                       }}>
-                        {readMode && <div style={{ ...label, color:T.accent, marginBottom:12, fontSize:8, letterSpacing:3 }}>READING MODE</div>}
+                        <div style={{ ...label, color:T.accent, marginBottom:12, fontSize:8, letterSpacing:3 }}>{LEN_LABELS[sumLen].toUpperCase()}</div>
                         {getSummary(item,aiMode,sumLen).split("\n\n").map((p,i) => (
-                          <p key={i} style={{ marginBottom: i < getSummary(item,aiMode,sumLen).split("\n\n").length - 1 ? (readMode ? 20 : 14) : 0 }}>{p}</p>
+                          <p key={i} style={{ marginBottom: i < getSummary(item,aiMode,sumLen).split("\n\n").length - 1 ? 20 : 0 }}>{p}</p>
                         ))}
                       </div>
 
                       {/* Tags */}
                       {item.tags?.length > 0 && (
                         <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>
-                          {item.tool && <Tag t="Tool" />}
+                          {item.tool && <Tag t="Featured" />}
                           {item.tags.map(t => <Tag key={t} t={t} />)}
                         </div>
                       )}
@@ -394,7 +431,7 @@ export default function NeonLuminary() {
                         Read on {item.src} →
                       </a>
 
-                      {/* Related — only on mobile (desktop has sidebar) */}
+                      {/* Related - only on mobile (desktop has sidebar) */}
                       {!isDesktop && <>
                         <div style={{ height:1, background:T.ruleStrong, margin:"32px 0 24px" }} />
                         {related.length > 0 && <>
@@ -413,7 +450,7 @@ export default function NeonLuminary() {
                   </div>
                 </div>
 
-                {/* Desktop sidebar — story list */}
+                {/* Desktop sidebar - story list */}
                 {isDesktop && (
                   <aside style={{ width:300, flexShrink:0, borderLeft:`1px solid ${T.rule}`, overflowY:"auto", padding:"32px 24px" }}>
                     <div style={{ ...label, marginBottom:16 }}>All Stories</div>
@@ -433,7 +470,7 @@ export default function NeonLuminary() {
                 )}
               </div>
 
-              {/* Page dots — mobile only */}
+              {/* Page dots - mobile only */}
               {!isDesktop && (
                 <div style={{ position:"absolute", bottom:12, left:0, right:0, display:"flex", justifyContent:"center", gap:5, pointerEvents:"none" }}>
                   {displayNews.map((_,i) => (
@@ -444,8 +481,8 @@ export default function NeonLuminary() {
               )}
 
               {/* Arrows */}
-              {!isDesktop && page > 0 && <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderLeft:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 4px 4px 0" }}>‹</button>}
-              {!isDesktop && page < displayNews.length-1 && <button onClick={()=>goPage(1)} style={{ position:"absolute", top:"50%", right:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderRight:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"4px 0 0 4px" }}>›</button>}
+              {!isDesktop && page > 0 && <button onClick={()=>goPage(-1)} style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderLeft:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"0 12px 12px 0" }}>‹</button>}
+              {!isDesktop && page < displayNews.length-1 && <button onClick={()=>goPage(1)} style={{ position:"absolute", top:"50%", right:0, transform:"translateY(-50%)", background:T.navBg, backdropFilter:"blur(12px)", border:`1px solid ${T.rule}`, borderRight:"none", color:T.muted, fontSize:18, cursor:"pointer", width:28, height:48, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"12px 0 0 12px" }}>›</button>}
             </div>
           )}
 
@@ -462,9 +499,9 @@ export default function NeonLuminary() {
                   <div style={{ display: isDesktop ? "grid" : "flex", gridTemplateColumns: isDesktop ? "repeat(auto-fill, minmax(160px, 1fr))" : undefined, gap:12, overflowX: isDesktop ? "visible" : "auto", padding: isDesktop ? "0 40px 20px" : "0 24px 20px" }}>
                     {toolList.map(t => (
                       <div key={t.id} onClick={()=>jumpToStory(t.id)}
-                        style={{ flexShrink:0, width: isDesktop ? "auto" : 120, padding:16, border:`1px solid ${T.rule}`, borderRadius:4, cursor:"pointer" }}>
+                        style={{ flexShrink:0, width: isDesktop ? "auto" : 120, padding:16, border:`1px solid ${T.rule}`, borderRadius:16, cursor:"pointer" }}>
                         <span style={{ fontSize:28, display:"block", marginBottom:8 }}>{t.e}</span>
-                        <div style={{ fontFamily:F.display, fontSize:14, fontWeight:400, lineHeight:1.25, color:T.text, marginBottom:4 }}>{t.title.split(" ").slice(0,4).join(" ")}…</div>
+                        <div style={{ fontFamily:F.display, fontSize:14, fontWeight:400, lineHeight:1.25, color:T.text, marginBottom:4 }}>{t.title.split(" ").slice(0,4).join(" ")}...</div>
                         <div style={meta}>{t.src}</div>
                       </div>
                     ))}
@@ -494,9 +531,9 @@ export default function NeonLuminary() {
             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", overflow:"hidden" }}>
               <div style={{ ...pad, paddingTop:24, paddingBottom:12, flexShrink:0 }}>
                 <div style={{ ...headline(28), marginBottom:16 }}>Discover</div>
-                <div style={{ display:"flex", alignItems:"center", gap:10, border:`1px solid ${T.rule}`, borderRadius:4, padding:"0 14px", marginBottom:14 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, border:`1px solid ${T.rule}`, borderRadius:16, padding:"0 14px", marginBottom:14 }}>
                   <span style={{ fontSize:14, color:T.faint }}>○</span>
-                  <input placeholder="Search stories, sources…" value={searchQ} onChange={e=>setSearchQ(e.target.value)}
+                  <input placeholder="Search stories, sources..." value={searchQ} onChange={e=>setSearchQ(e.target.value)}
                     style={{ flex:1, background:"none", border:"none", outline:"none", fontFamily:F.body, fontSize:14, fontWeight:400, color:T.text, padding:"12px 0" }} />
                 </div>
                 <div style={{ display:"flex", gap:6, overflowX:"auto" }}>
@@ -572,10 +609,11 @@ export default function NeonLuminary() {
 
                     {/* Theme */}
                     <div style={{ ...label, marginBottom:8 }}>Appearance</div>
-                    <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                      <PillBtn label="Light" on={!dark} onClick={()=>setDark(false)} />
-                      <PillBtn label="Dark" on={dark} onClick={()=>setDark(true)} />
+                    <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+                      <PillBtn label="Dark" on={dark} onClick={() => setDark(true)} />
+                      <PillBtn label="Light" on={!dark} onClick={() => setDark(false)} />
                     </div>
+                    <div style={{ ...meta, marginBottom:24 }}>Choose your preferred theme</div>
                   </div>
 
                   <div>
@@ -588,12 +626,12 @@ export default function NeonLuminary() {
                     {/* Reading mode */}
                     <div style={{ ...label, marginBottom:8 }}>Reading Mode</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
-                      {["ELI5","Technical","Business"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
+                      {["Simple","Expert","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                     </div>
                   </div>
                 </div>
 
-                {/* Interests — full width */}
+                {/* Interests - full width */}
                 <div style={{ ...label, marginBottom:8 }}>My Interests</div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:8 }}>
                   {CATS.map(c => <PillBtn key={c} label={c} on={interests.includes(c)} onClick={()=>setInterests(p=>p.includes(c)?p.filter(x=>x!==c):[...p,c])} />)}
@@ -605,14 +643,14 @@ export default function NeonLuminary() {
 
           {/* Toast */}
           {toast && (
-            <div style={{ position:"fixed", bottom:80, left:"50%", transform:"translateX(-50%)", width:"calc(100% - 48px)", maxWidth:432, background:T.toastBg, border:`1px solid ${T.ruleStrong}`, borderRadius:4, padding:"12px 16px", display:"flex", alignItems:"center", gap:10, zIndex:9999, animation:"toastIn .22s ease both" }}>
+            <div style={{ position:"fixed", bottom:80, left:"50%", transform:"translateX(-50%)", width:"calc(100% - 48px)", maxWidth:432, background:T.toastBg, border:`1px solid ${T.ruleStrong}`, borderRadius:16, padding:"12px 16px", display:"flex", alignItems:"center", gap:10, zIndex:9999, animation:"toastIn .22s ease both" }}>
               <span style={{ fontSize:14 }}>{toast.icon}</span>
               <span style={{ fontFamily:F.body, fontSize:13, fontWeight:500, color:T.text }}>{toast.msg}</span>
             </div>
           )}
         </div>
 
-        {/* Bottom nav — mobile only */}
+        {/* Bottom nav - mobile only */}
         <nav style={{ height:64, display: isDesktop ? "none" : "flex", alignItems:"center", justifyContent:"space-around", background:T.navBg, backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderTop:`1px solid ${T.ruleStrong}`, flexShrink:0, paddingBottom:4 }}>
           {TABS.map(t => (
             <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, cursor:"pointer", padding:"6px 14px", background:"none", border:"none" }}>
