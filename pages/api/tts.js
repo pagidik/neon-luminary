@@ -42,13 +42,24 @@ export default async function handler(req, res) {
   /* ── Path 2: Microsoft Edge TTS (free, neural, no key needed) ── */
   try {
     const tts = new MsEdgeTTS();
-    await tts.setMetadata("en-US-DavisNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+    await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
-    const { audioStream } = tts.toStream(plainScript, {
-      rate: "-8%",
-      pitch: "-2Hz",
-      volume: "+0%",
-    });
+    const ssml = `
+      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
+        <voice name="en-US-AriaNeural">
+          <prosody rate="-5%" pitch="+2Hz" volume="loud">
+            <emphasis level="moderate">${title}.</emphasis>
+            <break time="600ms"/>
+            ${summary}
+            <break time="500ms"/>
+            <emphasis level="moderate">Key takeaway.</emphasis>
+            <break time="300ms"/>
+            ${whyItMatters}
+          </prosody>
+        </voice>
+      </speak>`.trim();
+
+    const { audioStream } = tts.rawToStream(ssml);
 
     const chunks = [];
     await new Promise((resolve, reject) => {
@@ -59,6 +70,7 @@ export default async function handler(req, res) {
     });
 
     const buf = Buffer.concat(chunks);
+    if (buf.length === 0) throw new Error("empty_audio");
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Cache-Control", "public, max-age=86400");
     return res.send(buf);

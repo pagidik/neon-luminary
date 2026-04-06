@@ -386,12 +386,12 @@ export default function NeonLuminary() {
                       {/* Controls row */}
                       <div style={{ display:"flex", gap:12, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                          <span style={{ ...meta, marginRight:2 }}>Reading Style</span>
+                          <span style={{ ...meta, marginRight:2 }}>I am a</span>
                           {["Intern","Techie","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                         </div>
                         <span style={{ width:1, height:16, background:T.rule }} />
                         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                          <span style={{ ...meta, marginRight:2 }}>Read Mode</span>
+                          <span style={{ ...meta, marginRight:2 }}>I want to</span>
                           {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
                         </div>
                       </div>
@@ -425,8 +425,8 @@ export default function NeonLuminary() {
 
                       {/* Actions */}
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
-                        <RxBtn id={item.id} type="like" emoji="👍" />
-                        <RxBtn id={item.id} type="fire" emoji="🔥" />
+                        <RxBtn id={item.id} type="like" emoji="△" />
+                        <RxBtn id={item.id} type="fire" emoji="⚡" />
                         <div style={{ flex:1 }} />
                         <IcoBtn ico={audioOn?"⏹":"▶"} on={audioOn} onClick={()=>playAudio(item)} />
                         <IcoBtn ico="★" on={bookmarks.includes(item.id)} onClick={()=>toggleBkm(item.id)} />
@@ -626,13 +626,13 @@ export default function NeonLuminary() {
 
                   <div>
                     {/* Reading Style */}
-                    <div style={{ ...label, marginBottom:8 }}>Reading Style</div>
+                    <div style={{ ...label, marginBottom:8 }}>I am a</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
                       {["Intern","Techie","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                     </div>
 
                     {/* Read Mode */}
-                    <div style={{ ...label, marginBottom:8 }}>Read Mode</div>
+                    <div style={{ ...label, marginBottom:8 }}>I want to</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
                       {["S","M","L"].map(s => <PillBtn key={s} label={LEN_LABELS[s]} on={sumLen===s} onClick={()=>setSumLen(s)} />)}
                     </div>
