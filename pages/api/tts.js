@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const { title, summary, whyItMatters } = req.body;
   if (!title || !summary) return res.status(400).json({ error: "bad_input" });
 
-  const plainScript = `${title}.\n\n${summary}\n\nKey takeaway. ${whyItMatters}`;
+  const script = `${title}.\n\n${summary}\n\nKey takeaway. ${whyItMatters}`;
 
   /* ── Path 1: ElevenLabs (if API key is set) ── */
   const elevenKey = process.env.ELEVENLABS_API_KEY;
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
           method: "POST",
           headers: { "xi-api-key": elevenKey, "Content-Type": "application/json" },
           body: JSON.stringify({
-            text: plainScript,
+            text: script,
             model_id: "eleven_turbo_v2_5",
             voice_settings: {
               stability: 0.4,
@@ -39,37 +39,30 @@ export default async function handler(req, res) {
     } catch {}
   }
 
-  /* ── Path 2: Microsoft Edge TTS (free, neural, no key needed) ── */
+  /* ── Path 2: Microsoft Edge TTS — AriaNeural (news-reader voice) ── */
   try {
     const tts = new MsEdgeTTS();
     await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
-    const ssml = `
-      <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
-        <voice name="en-US-AriaNeural">
-          <prosody rate="-5%" pitch="+2Hz" volume="loud">
-            <emphasis level="moderate">${title}.</emphasis>
-            <break time="600ms"/>
-            ${summary}
-            <break time="500ms"/>
-            <emphasis level="moderate">Key takeaway.</emphasis>
-            <break time="300ms"/>
-            ${whyItMatters}
-          </prosody>
-        </voice>
-      </speak>`.trim();
-
-    const { audioStream } = tts.rawToStream(ssml);
-
-    const chunks = [];
-    await new Promise((resolve, reject) => {
-      audioStream.on("data", (chunk) => chunks.push(chunk));
-      audioStream.on("end", resolve);
-      audioStream.on("close", resolve);
-      audioStream.on("error", reject);
+    const { audioStream } = tts.toStream(script, {
+      rate: "-5%",
+      pitch: "+2Hz",
     });
 
-    const buf = Buffer.concat(chunks);
+    const chunks = [];
+    let resolved = false;
+    const buf = await new Promise((resolve, reject) => {
+      audioStream.on("data", (chunk) => chunks.push(chunk));
+      const done = () => {
+        if (!resolved) { resolved = true; resolve(Buffer.concat(chunks)); }
+      };
+      audioStream.on("end", done);
+      audioStream.on("close", done);
+      audioStream.on("error", (e) => {
+        if (!resolved) { resolved = true; reject(e); }
+      });
+    });
+
     if (buf.length === 0) throw new Error("empty_audio");
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Cache-Control", "public, max-age=86400");
