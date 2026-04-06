@@ -76,14 +76,15 @@ const trunc = (text, n) => {
   return w.length <= n ? text : w.slice(0, n).join(" ") + "...";
 };
 const getSummary = (item, mode, len) => {
-  if (len === "S") return item.skim || trunc(item.summary, 25);
-  if (len === "L") return item.detailed || item.summary;
   const source = {
     Intern: item.eli5 || item.summary,
     Techie: item.summary,
     Executive: item.business || item.summary,
   };
-  return source[mode] || item.summary;
+  const text = source[mode] || item.summary;
+  if (len === "S") return trunc(text, 75);
+  if (len === "L") return item.detailed || text;
+  return text;
 };
 
 const fmtDate = (iso) => {
@@ -220,7 +221,7 @@ export default function NeonLuminary() {
     if (audioOn) { stopAudio(); return; }
     setAudioOn(true); toast$("Generating...", "◎");
     try {
-      const resp = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: it.title, summary: getSummary(it, aiMode, "L"), whyItMatters: it.whyItMatters }) });
+      const resp = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: it.title, summary: getSummary(it, aiMode, sumLen), whyItMatters: it.whyItMatters }) });
       if (!resp.ok) throw new Error("api");
       const blob = await resp.blob(); const url = URL.createObjectURL(blob);
       const audio = new Audio(url); audioRef.current = audio;
@@ -386,7 +387,7 @@ export default function NeonLuminary() {
                       {/* Controls row */}
                       <div style={{ display:"flex", gap:12, marginBottom:12, flexWrap:"wrap", alignItems:"center" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                          <span style={{ ...meta, marginRight:2 }}>I am a</span>
+                          <span style={{ ...meta, marginRight:2 }}>I am</span>
                           {["Intern","Techie","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                         </div>
                         <span style={{ width:1, height:16, background:T.rule }} />
@@ -626,7 +627,7 @@ export default function NeonLuminary() {
 
                   <div>
                     {/* Reading Style */}
-                    <div style={{ ...label, marginBottom:8 }}>I am a</div>
+                    <div style={{ ...label, marginBottom:8 }}>I am</div>
                     <div style={{ display:"flex", gap:8, marginBottom:24 }}>
                       {["Intern","Techie","Executive"].map(m => <PillBtn key={m} label={MODE_LABELS[m]} on={aiMode===m} onClick={()=>setAiMode(m)} />)}
                     </div>

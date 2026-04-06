@@ -42,11 +42,11 @@ export default async function handler(req, res) {
   /* ── Path 2: Microsoft Edge TTS — AriaNeural (news-reader voice) ── */
   try {
     const tts = new MsEdgeTTS();
-    await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+    await tts.setMetadata("en-US-AndrewNeural", OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
     const { audioStream } = tts.toStream(script, {
-      rate: "-5%",
-      pitch: "+2Hz",
+      rate: "-3%",
+      pitch: "+1Hz",
     });
 
     const chunks = [];
