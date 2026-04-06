@@ -69,7 +69,7 @@ const F = {
 };
 
 const CATS = ["LLMs","Tools","Startups","Research","Coding AI","Business"];
-const WL = { S:100, M:150, L:200 };
+const WL = { S:30, M:60 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
@@ -82,6 +82,7 @@ const getSummary = (item, mode, len) => {
     Executive: item.business || item.summary,
   };
   const text = source[mode] || item.summary;
+  if (len === "L") return text;
   return trunc(text, WL[len]);
 };
 
