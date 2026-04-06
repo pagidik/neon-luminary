@@ -13,11 +13,11 @@ const themes = {
     text: "#e8e9ed",
     muted: "#b0b3ba",
     faint: "#6b6e76",
-    accent: "#4d7aff",
-    accentDim: "#5a85ff",
+    accent: "#5e9eff",
+    accentDim: "#6daeff",
     accentAlt: "#9d6cf0",
     accentMint: "#3dd9a0",
-    accentMuted: "rgba(77,122,255,0.14)",
+    accentMuted: "rgba(94,158,255,0.14)",
     accentAltMuted: "rgba(157,108,240,0.14)",
     rule: "rgba(255,255,255,0.06)",
     ruleStrong: "rgba(255,255,255,0.10)",
@@ -28,7 +28,7 @@ const themes = {
     info: "#5aaaf0",
     navBg: "rgba(22,22,24,0.80)",
     toastBg: "rgba(22,22,24,0.90)",
-    glow: "0 0 20px rgba(77,122,255,0.12)",
+    glow: "0 0 20px rgba(94,158,255,0.12)",
     glowAlt: "0 0 16px rgba(157,108,240,0.14)",
   },
   light: {
@@ -73,7 +73,14 @@ const WL = { S:30, M:60 };
 
 const trunc = (text, n) => {
   const w = text.split(" ");
-  return w.length <= n ? text : w.slice(0, n).join(" ") + "...";
+  if (w.length <= n) return text;
+  const partial = w.slice(0, n).join(" ");
+  const lastDot = partial.lastIndexOf(". ");
+  if (lastDot > partial.length * 0.4) return partial.slice(0, lastDot + 1);
+  const rest = text.slice(partial.length);
+  const nextDot = rest.search(/\.\s|\.$/);
+  if (nextDot >= 0) return partial + rest.slice(0, nextDot + 1);
+  return text;
 };
 const getSummary = (item, mode, len) => {
   const source = {
@@ -420,7 +427,7 @@ export default function NeonLuminary() {
                             return acc;
                           }, []);
                           return parts.map((p, i) => (
-                            <p key={i} style={{ marginBottom: i < parts.length - 1 ? 16 : 0, textIndent: i > 0 ? "1.5em" : 0 }}>{p.trim()}</p>
+                            <p key={i} style={{ marginBottom: i < parts.length - 1 ? 16 : 0 }}>{p.trim()}</p>
                           ));
                         })()}
                       </div>
